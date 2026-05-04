@@ -122,6 +122,12 @@ class TTSService(ComfyBaseService):
                 speed=speed,
                 output_path=output_path
             )
+        elif mode == "voicebox":
+            return await self._call_voicebox_tts(
+                text=text,
+                voice=voice,
+                output_path=output_path
+            )
         else:  # comfyui
             # 1. Resolve workflow (returns structured info)
             workflow_info = self._resolve_workflow(workflow=workflow)
@@ -192,6 +198,46 @@ class TTSService(ComfyBaseService):
         
         except Exception as e:
             logger.error(f"Local TTS generation error: {e}")
+            raise
+
+    async def _call_voicebox_tts(
+        self,
+        text: str,
+        voice: Optional[str] = None,
+        output_path: Optional[str] = None,
+    ) -> str:
+        """
+        Generate speech using VoiceBox local API (http://192.168.0.102:17493)
+        """
+        import httpx
+        
+        logger.info(f"🎙️  Using VoiceBox TTS: profile_id={voice}")
+        
+        # Generate output path if not provided
+        if not output_path:
+            unique_id = uuid.uuid4().hex
+            output_path = f"output/{unique_id}.wav"
+            Path("output").mkdir(parents=True, exist_ok=True)
+            
+        payload = {
+            "profile_id": voice,
+            "text": text
+        }
+        
+        try:
+            # Voice generation might take a few seconds
+            async with httpx.AsyncClient(timeout=None) as client:
+                response = await client.post("http://192.168.0.102:17493/generate/stream", json=payload)
+                response.raise_for_status()
+                
+                with open(output_path, 'wb') as f:
+                    f.write(response.content)
+            
+            logger.info(f"✅ Generated audio (VoiceBox TTS): {output_path}")
+            return output_path
+        
+        except Exception as e:
+            logger.error(f"VoiceBox TTS generation error: {e}")
             raise
     
     async def _call_comfyui_workflow(

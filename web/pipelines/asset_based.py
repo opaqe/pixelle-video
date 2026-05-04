@@ -187,8 +187,8 @@ class AssetBasedPipelineUI(PipelineUI):
                 st.markdown(tr("asset_based.source.how"))
             
             source_options = {
-                "runninghub": tr("asset_based.source.runninghub"),
-                "selfhost": tr("asset_based.source.selfhost")
+                "selfhost": tr("asset_based.source.selfhost"),
+                "runninghub": tr("asset_based.source.runninghub")
             }
             
             # Check if RunningHub API key is configured

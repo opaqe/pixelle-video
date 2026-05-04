@@ -63,7 +63,7 @@ class ImageToVideoPipelineUI(PipelineUI):
 
             def list_i2v_workflows():
                 result = []
-                for source in ("runninghub", "selfhost"):
+                for source in ("selfhost", "runninghub"):
                     dir_path = os.path.join("workflows", source)
                     if not os.path.isdir(dir_path):
                         continue

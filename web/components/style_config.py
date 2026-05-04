@@ -24,6 +24,19 @@ from web.i18n import tr, get_language
 from web.utils.async_helpers import run_async
 from web.utils.streamlit_helpers import check_and_warn_selfhost_workflow
 from pixelle_video.config import config_manager
+import requests
+import base64
+
+@st.cache_data(ttl=60)
+def get_voicebox_profiles():
+    try:
+        resp = requests.get("http://192.168.0.102:17493/profiles", timeout=3.0)
+        if resp.status_code == 200:
+            return resp.json()
+    except Exception as e:
+        logger.error(f"VoiceBox API Error: {e}")
+    return []
+
 
 
 def render_style_config(pixelle_video):
@@ -46,16 +59,18 @@ def render_style_config(pixelle_video):
         # Inference mode selection
         tts_mode = st.radio(
             tr("tts.inference_mode"),
-            ["local", "comfyui"],
+            ["local", "voicebox", "comfyui"],
             horizontal=True,
-            format_func=lambda x: tr(f"tts.mode.{x}"),
-            index=0 if tts_config.get("inference_mode", "local") == "local" else 1,
+            format_func=lambda x: tr(f"tts.mode.{x}") if x != "voicebox" else "VoiceBox",
+            index=["local", "voicebox", "comfyui"].index(tts_config.get("inference_mode", "voicebox")) if tts_config.get("inference_mode", "voicebox") in ["local", "voicebox", "comfyui"] else 1,
             key="tts_inference_mode"
         )
         
         # Show hint based on mode
         if tts_mode == "local":
             st.caption(tr("tts.mode.local_hint"))
+        elif tts_mode == "voicebox":
+            st.caption("VoiceBox Inference Endpoint: http://192.168.0.102:17493")
         else:
             st.caption(tr("tts.mode.comfyui_hint"))
         
@@ -116,6 +131,38 @@ def render_style_config(pixelle_video):
                 st.caption(tr("tts.speed_label", speed=f"{tts_speed:.1f}"))
             
             # Variables for video generation
+            tts_workflow_key = None
+            ref_audio_path = None
+        
+        # ================================================================
+        # VoiceBox Mode UI
+        # ================================================================
+        elif tts_mode == "voicebox":
+            vb_profiles = get_voicebox_profiles()
+            vb_config = tts_config.get("voicebox", {})
+            saved_vb_voice = vb_config.get("voice", "")
+            
+            if not vb_profiles:
+                st.error("No profiles found or failed to connect to VoiceBox API.")
+                selected_voice = ""
+            else:
+                vb_options = [p["name"] for p in vb_profiles]
+                vb_ids = [p["id"] for p in vb_profiles]
+                
+                default_vb_index = 0
+                if saved_vb_voice in vb_ids:
+                    default_vb_index = vb_ids.index(saved_vb_voice)
+                elif saved_vb_voice in vb_options:
+                    default_vb_index = vb_options.index(saved_vb_voice)
+                    
+                selected_voice_display = st.selectbox(
+                    "VoiceBox Profile",
+                    vb_options,
+                    index=default_vb_index,
+                    key="tts_voicebox_profile"
+                )
+                selected_voice = vb_ids[vb_options.index(selected_voice_display)]
+                
             tts_workflow_key = None
             ref_audio_path = None
         
@@ -204,6 +251,8 @@ def render_style_config(pixelle_video):
                         if tts_mode == "local":
                             tts_params["voice"] = selected_voice
                             tts_params["speed"] = tts_speed
+                        elif tts_mode == "voicebox":
+                            tts_params["voice"] = selected_voice
                         else:  # comfyui
                             tts_params["workflow"] = tts_workflow_key
                             if ref_audio_path:
@@ -864,7 +913,7 @@ def render_style_config(pixelle_video):
     # Return all style configuration parameters
     return {
         "tts_inference_mode": tts_mode,
-        "tts_voice": selected_voice if tts_mode == "local" else None,
+        "tts_voice": selected_voice if tts_mode in ["local", "voicebox"] else None,
         "tts_speed": tts_speed if tts_mode == "local" else None,
         "tts_workflow": tts_workflow_key if tts_mode == "comfyui" else None,
         "ref_audio": str(ref_audio_path) if ref_audio_path else None,

@@ -126,7 +126,7 @@ async def generate_narrations_from_topic(
     response = await llm_service(
         prompt=prompt,
         temperature=0.8,
-        max_tokens=2000
+        max_tokens=8192
     )
     
     logger.debug(f"LLM response: {response[:200]}...")
@@ -143,8 +143,10 @@ async def generate_narrations_from_topic(
     if len(narrations) > n_scenes:
         logger.warning(f"Got {len(narrations)} narrations, taking first {n_scenes}")
         narrations = narrations[:n_scenes]
+    elif len(narrations) == 0:
+        raise ValueError("LLM generated 0 narrations")
     elif len(narrations) < n_scenes:
-        raise ValueError(f"Expected {n_scenes} narrations, got only {len(narrations)}")
+        logger.warning(f"Expected {n_scenes} narrations, got only {len(narrations)}. Proceeding with {len(narrations)} scenes.")
     
     logger.info(f"Generated {len(narrations)} narrations successfully")
     return narrations
@@ -184,7 +186,7 @@ async def generate_narrations_from_content(
     response = await llm_service(
         prompt=prompt,
         temperature=0.8,
-        max_tokens=2000
+        max_tokens=8192
     )
     
     # Parse JSON
@@ -199,8 +201,10 @@ async def generate_narrations_from_content(
     if len(narrations) > n_scenes:
         logger.warning(f"Got {len(narrations)} narrations, taking first {n_scenes}")
         narrations = narrations[:n_scenes]
+    elif len(narrations) == 0:
+        raise ValueError("LLM generated 0 narrations")
     elif len(narrations) < n_scenes:
-        raise ValueError(f"Expected {n_scenes} narrations, got only {len(narrations)}")
+        logger.warning(f"Expected {n_scenes} narrations, got only {len(narrations)}. Proceeding with {len(narrations)} scenes.")
     
     logger.info(f"Generated {len(narrations)} narrations successfully")
     return narrations
@@ -489,15 +493,22 @@ def _parse_json(text: str) -> dict:
         except json.JSONDecodeError:
             pass
     
-    # Try to find any JSON object in the text
-    json_pattern = r'\{[^{}]*(?:"narrations"|"image_prompts")\s*:\s*\[[^\]]*\][^{}]*\}'
-    match = re.search(json_pattern, text, re.DOTALL)
-    if match:
+    # Try to find any JSON object in the text by locating the first { and last }
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        json_str = text[start:end+1]
         try:
-            return json.loads(match.group(0))
-        except json.JSONDecodeError:
-            pass
-    
-    # If all fails, raise error
-    raise json.JSONDecodeError("No valid JSON found", text, 0)
+            return json.loads(json_str)
+        except Exception:
+            # Try applying a dirty JSON formatter for trailing commas
+            try:
+                sanitized = re.sub(r',\s*([\]}])', r'\1', json_str)
+                return json.loads(sanitized)
+            except Exception:
+                pass
+                
+    # If all fails, log the text and raise an error
+    logger.error(f"FATAL JSON PARSE FAILURE. Raw output:\n{text[:1000]}")
+    raise json.JSONDecodeError(f"No valid JSON found. Raw: {text[:100]}...", text, 0)
 
