@@ -17,8 +17,13 @@ This is the entry point for the Streamlit multi-page application.
 Uses st.navigation to define pages and set the default page to Home.
 """
 
+import os
 import sys
 from pathlib import Path
+
+if os.name == 'nt':
+    import asyncio
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 # Add project root to sys.path for module imports
 _script_dir = Path(__file__).resolve().parent

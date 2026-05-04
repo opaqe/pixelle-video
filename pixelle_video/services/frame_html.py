@@ -53,8 +53,7 @@ class HTMLFrameGenerator:
         ... )
     """
     
-    _browser = None
-    _playwright = None
+    # Playwright browser instances are now managed per-frame to avoid thread/loop conflicts in Streamlit
 
     def __init__(self, template_path: str):
         """
@@ -305,32 +304,9 @@ class HTMLFrameGenerator:
         return re.sub(PARAM_PATTERN, replacer, html)
 
     @classmethod
-    async def _ensure_browser(cls):
-        """Lazily initialize a shared Playwright browser instance"""
-        if cls._browser is None or not cls._browser.is_connected():
-            from playwright.async_api import async_playwright
-            cls._playwright = await async_playwright().start()
-            cls._browser = await cls._playwright.chromium.launch(
-                args=[
-                    '--no-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-gpu',
-                    '--disable-extensions',
-                ]
-            )
-            logger.debug("Initialized Playwright Chromium browser")
-        return cls._browser
-
-    @classmethod
     async def close_browser(cls):
         """Shutdown the shared browser instance (call on app teardown)"""
-        if cls._browser:
-            await cls._browser.close()
-            cls._browser = None
-        if cls._playwright:
-            await cls._playwright.stop()
-            cls._playwright = None
-            logger.debug("Playwright browser closed")
+        pass  # Playwright instances are now managed locally per frame
 
     async def generate_frame(
         self,
@@ -387,24 +363,34 @@ class HTMLFrameGenerator:
         logger.debug(f"Rendering HTML template to {output_path} (size: {self.width}x{self.height})")
         tmp_html_path = None
         try:
-            browser = await self._ensure_browser()
-            page = await browser.new_page(
-                viewport={'width': self.width, 'height': self.height},
-                device_scale_factor=1,
-            )
-            try:
-                # Write HTML to a temp file and navigate via file:// URL so that
-                # local file:// image references are loaded under the same origin.
-                fd, tmp_html_path = tempfile.mkstemp(suffix='.html', prefix='pv_frame_')
-                with os.fdopen(fd, 'w', encoding='utf-8') as f:
-                    f.write(html)
-                
-                await page.goto(Path(tmp_html_path).as_uri(), wait_until='networkidle')
-                await page.screenshot(path=output_path, type='png', omit_background=True)
-            finally:
-                await page.close()
-                if tmp_html_path and os.path.exists(tmp_html_path):
-                    os.unlink(tmp_html_path)
+            from playwright.async_api import async_playwright
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    args=[
+                        '--no-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-gpu',
+                        '--disable-extensions',
+                    ]
+                )
+                page = await browser.new_page(
+                    viewport={'width': self.width, 'height': self.height},
+                    device_scale_factor=1,
+                )
+                try:
+                    # Write HTML to a temp file and navigate via file:// URL so that
+                    # local file:// image references are loaded under the same origin.
+                    fd, tmp_html_path = tempfile.mkstemp(suffix='.html', prefix='pv_frame_')
+                    with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                        f.write(html)
+                    
+                    await page.goto(Path(tmp_html_path).as_uri(), wait_until='networkidle')
+                    await page.screenshot(path=output_path, type='png', omit_background=True)
+                finally:
+                    await page.close()
+                    await browser.close()
+                    if tmp_html_path and os.path.exists(tmp_html_path):
+                        os.unlink(tmp_html_path)
             
             logger.info(f"Frame generated: {output_path}")
             return output_path
