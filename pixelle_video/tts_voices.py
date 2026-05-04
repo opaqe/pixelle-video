@@ -23,51 +23,15 @@ from typing import List, Dict, Any
 EDGE_TTS_VOICES: List[Dict[str, Any]] = [
     # Chinese voices
     {
-        "id": "zh-CN-XiaoxiaoNeural",
-        "label_key": "tts.voice.zh_CN_XiaoxiaoNeural",
-        "locale": "zh-CN",
-        "gender": "female"
-    },
-    {
-        "id": "zh-CN-XiaoyiNeural",
-        "label_key": "tts.voice.zh_CN_XiaoyiNeural",
-        "locale": "zh-CN",
-        "gender": "female"
-    },
-    {
-        "id": "zh-CN-YunjianNeural",
-        "label_key": "tts.voice.zh_CN_YunjianNeural",
-        "locale": "zh-CN",
+        "id": "ko-KR-InJoonNeural",
+        "label_key": "tts.voice.ko-KR-InJoonNeural",
+        "locale": "ko-KR",
         "gender": "male"
     },
     {
-        "id": "zh-CN-YunxiNeural",
-        "label_key": "tts.voice.zh_CN_YunxiNeural",
-        "locale": "zh-CN",
-        "gender": "male"
-    },
-    {
-        "id": "zh-CN-YunyangNeural",
-        "label_key": "tts.voice.zh_CN_YunyangNeural",
-        "locale": "zh-CN",
-        "gender": "male"
-    },
-    {
-        "id": "zh-CN-YunyeNeural",
-        "label_key": "tts.voice.zh_CN_YunyeNeural",
-        "locale": "zh-CN",
-        "gender": "male"
-    },
-    {
-        "id": "zh-CN-YunfengNeural",
-        "label_key": "tts.voice.zh_CN_YunfengNeural",
-        "locale": "zh-CN",
-        "gender": "male"
-    },
-    {
-        "id": "zh-CN-liaoning-XiaobeiNeural",
-        "label_key": "tts.voice.zh_CN_liaoning_XiaobeiNeural",
-        "locale": "zh-CN",
+        "id": "ko-KR-SunHiNeural",
+        "label_key": "tts.voice.ko-KR-SunHiNeural",
+        "locale": "ko-KR",
         "gender": "female"
     },
     {
@@ -105,18 +69,6 @@ EDGE_TTS_VOICES: List[Dict[str, Any]] = [
         "label_key": "tts.voice.en_GB_RyanNeural",
         "locale": "en-GB",
         "gender": "male"
-    },
-    {
-        "id": "ko-KR-InJoonNeural",
-        "label_key": "tts.voice.ko-KR-InJoonNeural",
-        "locale": "ko-KR",
-        "gender": "male"
-    },
-    {
-        "id": "ko-KR-SunHiNeural",
-        "label_key": "tts.voice.ko-KR-SunHiNeural",
-        "locale": "ko-KR",
-        "gender": "female"
     },
     {
         "id": "fr-FR-EloiseNeural",
