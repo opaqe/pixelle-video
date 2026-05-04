@@ -91,6 +91,7 @@ class TemplateConfig(BaseModel):
 class PixelleVideoConfig(BaseModel):
     """Pixelle-Video main configuration"""
     project_name: str = Field(default="Pixelle-Video", description="Project name")
+    language: Optional[str] = Field(default=None, description="UI Language code (e.g., ko_KR, en_US)")
     llm: LLMConfig = Field(default_factory=LLMConfig)
     comfyui: ComfyUIConfig = Field(default_factory=ComfyUIConfig)
     template: TemplateConfig = Field(default_factory=TemplateConfig)

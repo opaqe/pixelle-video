@@ -244,6 +244,13 @@ load_locales()
 
 # Auto-detect and set system language
 _detected_language = detect_system_language()
-_current_language = _detected_language
-logger.info(f"Default language initialized to: {_current_language}")
 
+try:
+    from pixelle_video.config import config_manager
+    _configured = config_manager.get("language")
+    _current_language = _configured if _configured in _locales else _detected_language
+except Exception as e:
+    logger.debug(f"Could not load language from config: {e}")
+    _current_language = _detected_language
+
+logger.info(f"Default language initialized to: {_current_language}")

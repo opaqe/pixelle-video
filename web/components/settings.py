@@ -291,6 +291,29 @@ def render_advanced_settings():
                     runninghub_48g_enabled = runninghub_instance_type_display == tr("settings.comfyui.runninghub_instance_48g")
         
         # ====================================================================
+        # App System Settings
+        # ====================================================================
+        with st.container(border=True):
+            st.markdown(f"**{tr('language.select')}**")
+            from web.i18n import get_available_languages
+            available_langs = get_available_languages()
+            current_lang = config_manager.get("language")
+            if not current_lang or current_lang not in available_langs:
+                current_lang = get_language()
+                
+            lang_codes = list(available_langs.keys())
+            lang_displays = [available_langs[c] for c in lang_codes]
+            
+            selected_lang_display = st.selectbox(
+                tr("language.select"),
+                options=lang_displays,
+                index=lang_codes.index(current_lang) if current_lang in lang_codes else 0,
+                label_visibility="collapsed",
+                key="ui_language_select"
+            )
+            selected_language_code = lang_codes[lang_displays.index(selected_lang_display)]
+
+        # ====================================================================
         # Action Buttons (full width at bottom)
         # ====================================================================
         st.markdown("---")
@@ -315,6 +338,8 @@ def render_advanced_settings():
                         runninghub_concurrent_limit=int(runninghub_concurrent_limit),
                         runninghub_instance_type=instance_type
                     )
+                    
+                    config_manager.config.language = selected_language_code
                     
                     # Only save to file if LLM config is valid
                     if llm_api_key and llm_base_url and llm_model:
