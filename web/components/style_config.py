@@ -771,6 +771,10 @@ def render_style_config(pixelle_video):
         
             # Default to first option (should be runninghub by sorting)
             default_workflow_index = 0
+            
+            # If image generation, change default to selfhost/image_zimage.json
+            if template_media_type != "video" and "selfhost/image_zimage.json" in workflow_keys:
+                default_workflow_index = workflow_keys.index("selfhost/image_zimage.json")
         
             # If user has a saved preference in config, try to match it
             comfyui_config = config_manager.get_comfyui_config()
@@ -793,7 +797,7 @@ def render_style_config(pixelle_video):
                 workflow_selected_index = workflow_options.index(workflow_display)
                 workflow_key = workflow_keys[workflow_selected_index]
             else:
-                workflow_key = "runninghub/image_flux.json"  # fallback
+                workflow_key = "selfhost/image_zimage.json" if template_media_type != "video" else "runninghub/video_wan2.1_fusionx.json"  # fallback
             
             # Check and warn for selfhost media workflow (auto popup if not confirmed)
             check_and_warn_selfhost_workflow(workflow_key)

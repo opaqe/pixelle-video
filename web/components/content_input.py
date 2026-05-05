@@ -187,7 +187,7 @@ def render_content_input():
             }
 
 
-def render_bgm_section(key_prefix=""):
+def render_bgm_section(key_prefix="", default_none=False):
     """Render BGM selection section"""
     with st.container(border=True):
         st.markdown(f"**{tr('section.bgm')}**")
@@ -215,7 +215,7 @@ def render_bgm_section(key_prefix=""):
         
         # Default to "default.mp3" if exists, otherwise first option
         default_index = 0
-        if "default.mp3" in bgm_files:
+        if not default_none and "default.mp3" in bgm_files:
             default_index = bgm_options.index("default.mp3")
         
         bgm_choice = st.selectbox(

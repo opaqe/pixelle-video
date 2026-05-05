@@ -322,15 +322,20 @@ class ActionTransferPipelineUI(PipelineUI):
                         generated_video_url = None
                         if hasattr(video_result, 'videos') and video_result.videos:
                             generated_video_url = video_result.videos[0]
+                        elif hasattr(video_result, 'gifs') and video_result.gifs:
+                            generated_video_url = video_result.gifs[0]
                         elif hasattr(video_result, 'outputs') and video_result.outputs:
                             for node_id, node_output in video_result.outputs.items():
-                                if isinstance(node_output, dict) and 'videos' in node_output:
-                                    videos = node_output['videos']
-                                    if videos and len(videos) > 0:
-                                        generated_video_url = videos[0]
+                                if isinstance(node_output, dict):
+                                    if 'videos' in node_output and node_output['videos']:
+                                        generated_video_url = node_output['videos'][0]
+                                        break
+                                    elif 'gifs' in node_output and node_output['gifs']:
+                                        generated_video_url = node_output['gifs'][0]
                                         break
 
                         if not generated_video_url:
+                            logger.error(f"Cannot find video url! video_result={video_result}")
                             raise Exception("The workflow did not return a video. Please check the workflow configuration.")
 
                         final_video_path = os.path.join(task_dir, "final.mp4")

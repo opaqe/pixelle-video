@@ -428,15 +428,19 @@ class DigitalHumanPipelineUI(PipelineUI):
                             generated_video_url = None
                             if hasattr(second_result, 'videos') and second_result.videos:
                                 generated_video_url = second_result.videos[0]
+                            elif hasattr(second_result, 'gifs') and second_result.gifs:
+                                generated_video_url = second_result.gifs[0]
                             elif hasattr(second_result, 'outputs') and second_result.outputs:
                                 for node_id, node_output in second_result.outputs.items():
-                                    if isinstance(node_output, dict) and 'videos' in node_output:
-                                        videos = node_output['videos']
-                                        if videos and len(videos) > 0:
-                                            generated_video_url = videos[0]
+                                    if isinstance(node_output, dict):
+                                        if 'videos' in node_output and node_output['videos']:
+                                            generated_video_url = node_output['videos'][0]
+                                            break
+                                        elif 'gifs' in node_output and node_output['gifs']:
+                                            generated_video_url = node_output['gifs'][0]
                                             break
                             if not generated_video_url:
-                                raise Exception("The second step of the workflow did not return a video. Please check the workflow configuration.")
+                                raise Exception(f"The second step of the workflow did not return a video. Status: {second_result.status}, Msg: {second_result.msg}, Raw outputs: {second_result.outputs}")
                                         
                             final_video_path = os.path.join(task_dir, "final.mp4")
                             timeout = httpx.Timeout(300.0)
@@ -521,15 +525,20 @@ class DigitalHumanPipelineUI(PipelineUI):
                                 generated_video_url = None
                                 if hasattr(second_result, 'videos') and second_result.videos:
                                     generated_video_url = second_result.videos[0]
+                                elif hasattr(second_result, 'gifs') and second_result.gifs:
+                                    generated_video_url = second_result.gifs[0]
                                 elif hasattr(second_result, 'outputs') and second_result.outputs:
                                     for node_id, node_output in second_result.outputs.items():
-                                        if isinstance(node_output, dict) and 'videos' in node_output:
-                                            videos = node_output['videos']
-                                            if videos and len(videos) > 0:
-                                                generated_video_url = videos[0]
+                                        if isinstance(node_output, dict):
+                                            if 'videos' in node_output and node_output['videos']:
+                                                generated_video_url = node_output['videos'][0]
+                                                break
+                                            elif 'gifs' in node_output and node_output['gifs']:
+                                                generated_video_url = node_output['gifs'][0]
                                                 break
                                 if not generated_video_url:
-                                    raise Exception("The second step of the workflow did not return a video. Please check the workflow configuration.")
+                                    logger.error(f"Cannot find video url! second_result={second_result}")
+                                    raise Exception(f"The second step of the workflow did not return a video. Status: {second_result.status}, Msg: {second_result.msg}, Raw outputs: {second_result.outputs}")
                                             
                                 final_video_path = os.path.join(task_dir, "final.mp4")
                                 timeout = httpx.Timeout(300.0)
@@ -603,15 +612,20 @@ class DigitalHumanPipelineUI(PipelineUI):
                                 generated_video_url = None
                                 if hasattr(second_result, 'videos') and second_result.videos:
                                     generated_video_url = second_result.videos[0]
+                                elif hasattr(second_result, 'gifs') and second_result.gifs:
+                                    generated_video_url = second_result.gifs[0]
                                 elif hasattr(second_result, 'outputs') and second_result.outputs:
                                     for node_id, node_output in second_result.outputs.items():
-                                        if isinstance(node_output, dict) and 'videos' in node_output:
-                                            videos = node_output['videos']
-                                            if videos and len(videos) > 0:
-                                                generated_video_url = videos[0]
+                                        if isinstance(node_output, dict):
+                                            if 'videos' in node_output and node_output['videos']:
+                                                generated_video_url = node_output['videos'][0]
+                                                break
+                                            elif 'gifs' in node_output and node_output['gifs']:
+                                                generated_video_url = node_output['gifs'][0]
                                                 break
                                 if not generated_video_url:
-                                    raise Exception("The second step of the workflow did not return a video. Please check the workflow configuration.")
+                                    logger.error(f"Cannot find video url! second_result={second_result}")
+                                    raise Exception(f"The second step of the workflow did not return a video. Status: {second_result.status}, Msg: {second_result.msg}, Raw outputs: {second_result.outputs}")
                                             
                                 final_video_path = os.path.join(task_dir, "final.mp4")
                                 timeout = httpx.Timeout(300.0)
