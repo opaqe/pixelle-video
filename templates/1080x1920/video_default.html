@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="template:media-width" content="512">
@@ -10,7 +11,7 @@
             padding: 0;
             height: 100%;
         }
-        
+
         body {
             margin: 0;
             padding: 0;
@@ -23,14 +24,14 @@
             justify-content: center;
             align-items: center;
         }
-        
+
         /* 主容器 - 居中并包含所有内容 */
         .main-container {
             position: relative;
             width: 1080px;
             height: 1920px;
         }
-        
+
         /* Background image layer (customizable using <img> tag) */
         .background-image {
             position: absolute;
@@ -40,7 +41,7 @@
             height: 100%;
             z-index: 0;
         }
-        
+
         /* Video overlay - 相对于main-container居中 */
         .video-overlay {
             position: absolute;
@@ -52,7 +53,7 @@
             /* background: #f00; */
             z-index: 1;
         }
-        
+
         /* Title section - positioned above video */
         .video-title-wrapper {
             position: absolute;
@@ -61,7 +62,7 @@
             transform: translateX(-50%);
             z-index: 2;
         }
-        
+
         .video-title {
             width: 900px;
             text-align: center;
@@ -78,7 +79,7 @@
             overflow-wrap: break-word;
             white-space: nowrap;
         }
-        
+
         /* 字幕区域 - 对齐视频底部 */
         .content {
             position: absolute;
@@ -88,21 +89,21 @@
             width: 900px;
             z-index: 4;
         }
-        
+
         .text {
             font-size: 40px;
             color: #ffffff;
             text-align: center;
             line-height: 1.6;
             font-weight: 500;
-            text-shadow: 
+            text-shadow:
                 2px 2px 4px rgba(0, 0, 0, 0.9),
                 0 0 8px rgba(0, 0, 0, 0.8),
                 0 0 16px rgba(0, 0, 0, 0.6);
             padding: 10px 0px;
             /* background-color: aqua; */
         }
-        
+
         /* Footer - positioned below video */
         .footer {
             position: absolute;
@@ -117,33 +118,33 @@
             border-top: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 2;
         }
-        
+
         .author-section {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        
+
         .author {
             font-size: 32px;
             font-weight: 600;
             color: #ffffff;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         .author-desc {
             font-size: 24px;
             color: rgba(255, 255, 255, 0.9);
             font-weight: 400;
         }
-        
+
         .logo-section {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
         }
-        
+
         .logo {
             font-size: 28px;
             font-weight: 600;
@@ -153,31 +154,32 @@
         }
     </style>
 </head>
+
 <body>
     <!-- 主容器 - 所有元素都在这里面，相对于video-overlay定位 -->
     <div class="main-container">
         <!-- Background image layer (customizable via background parameter) -->
         <div class="background-image">
-            
+
         </div>
-        
+
         <!-- Video overlay - 居中参考点 -->
         <div class="video-overlay"></div>
-        
+
         <!-- Video title - positioned above video -->
         <div class="video-title-wrapper">
             <div class="video-title">{{title}}</div>
         </div>
-        
+
         <!-- 字幕区域 - 独立定位在视频底部 -->
         <div class="content">
             <div class="text">{{text}}</div>
         </div>
-        
+
         <!-- Footer - positioned below video -->
         <div class="footer">
             <div class="author-section">
-                <div class="author">{{author=@Pixelle.AI}}</div>
+                <div class="author">{{author=@생각의창}}</div>
                 <div class="author-desc">{{describe=Open Source Omnimodal AI Creative Agent}}</div>
             </div>
             <div class="logo-section">
@@ -185,7 +187,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         /**
          * 根据文本宽度自动调整字体大小
@@ -199,11 +201,11 @@
                 if (!element || !element.textContent || !element.textContent.trim()) {
                     return;
                 }
-                
+
                 if (!document.body) {
                     return;
                 }
-                
+
                 // 创建一个临时的测量元素
                 const measure = document.createElement('span');
                 measure.style.visibility = 'hidden';
@@ -211,7 +213,7 @@
                 measure.style.top = '-9999px';
                 measure.style.left = '-9999px';
                 measure.style.whiteSpace = 'nowrap';
-                
+
                 // 复制元素的样式
                 const computedStyle = window.getComputedStyle(element);
                 measure.style.fontFamily = computedStyle.fontFamily;
@@ -219,14 +221,14 @@
                 measure.style.fontWeight = computedStyle.fontWeight;
                 measure.style.letterSpacing = computedStyle.letterSpacing;
                 measure.textContent = element.textContent;
-                
+
                 document.body.appendChild(measure);
-                
+
                 // 二分查找合适的字体大小
                 let low = minFontSize;
                 let high = maxFontSize;
                 let bestSize = maxFontSize;
-                
+
                 // 先检查最大字体是否合适
                 measure.style.fontSize = maxFontSize + 'px';
                 if (measure.offsetWidth <= maxWidth) {
@@ -236,7 +238,7 @@
                     while (high - low > 0.5) {
                         const mid = (low + high) / 2;
                         measure.style.fontSize = mid + 'px';
-                        
+
                         if (measure.offsetWidth <= maxWidth) {
                             bestSize = mid;
                             low = mid;
@@ -245,10 +247,10 @@
                         }
                     }
                 }
-                
+
                 // 应用找到的字体大小
                 element.style.fontSize = bestSize + 'px';
-                
+
                 // 清理临时元素
                 if (measure.parentNode) {
                     document.body.removeChild(measure);
@@ -257,7 +259,7 @@
                 console.error('自动调整字体大小出错:', error);
             }
         }
-        
+
         // 页面加载完成后自动调整字体大小
         function initAutoFit() {
             try {
@@ -266,7 +268,7 @@
                     // 获取容器的实际宽度
                     const wrapper = document.querySelector('.video-title-wrapper');
                     const maxWidth = wrapper ? wrapper.offsetWidth : 900;
-                    
+
                     // 自动调整字体大小：最小12px，最大72px
                     autoFitFontSize(titleElement, maxWidth, 12, 72);
                 }
@@ -274,7 +276,7 @@
                 console.error('初始化自动调整字体大小出错:', error);
             }
         }
-        
+
         // 等待 DOM 加载完成
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initAutoFit);
@@ -282,25 +284,25 @@
             // DOM 已经加载完成
             initAutoFit();
         }
-        
+
         // 如果内容是通过模板引擎动态插入的，可以监听内容变化
         // 使用 MutationObserver 监听文本变化
         if (typeof MutationObserver !== 'undefined') {
             try {
-                const observer = new MutationObserver(function(mutations) {
+                const observer = new MutationObserver(function (mutations) {
                     let shouldUpdate = false;
-                    mutations.forEach(function(mutation) {
+                    mutations.forEach(function (mutation) {
                         if (mutation.type === 'childList' || mutation.type === 'characterData') {
                             shouldUpdate = true;
                         }
                     });
-                    
+
                     if (shouldUpdate) {
                         // 延迟执行，避免频繁调用
                         setTimeout(initAutoFit, 100);
                     }
                 });
-                
+
                 // 等待 body 元素存在后再观察
                 if (document.body) {
                     observer.observe(document.body, {
@@ -309,7 +311,7 @@
                         characterData: true
                     });
                 } else {
-                    document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('DOMContentLoaded', function () {
                         if (document.body) {
                             observer.observe(document.body, {
                                 childList: true,
@@ -325,4 +327,5 @@
         }
     </script>
 </body>
+
 </html>

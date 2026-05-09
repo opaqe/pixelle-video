@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="template:media-width" content="1024">
@@ -9,12 +10,22 @@
     <!-- Google Fonts - 中文字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400&display=swap"
+        rel="stylesheet">
     <style>
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html, body { width: 1080px; height: 1920px; overflow: hidden; }
+        html,
+        body {
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
+        }
 
         body {
             font-family: 'Noto Sans SC', 'PingFang SC', 'Source Han Sans', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -57,9 +68,9 @@
             margin-bottom: 100px;
             /* 白色描边 */
             text-shadow: -2px -2px 0 #fff,
-                        2px -2px 0 #fff,
-                        -2px 2px 0 #fff,
-                        2px 2px 0 #fff;
+                2px -2px 0 #fff,
+                -2px 2px 0 #fff,
+                2px 2px 0 #fff;
         }
 
         /* 正文区域 */
@@ -76,9 +87,9 @@
             letter-spacing: 0.5px;
             /* 白色描边 */
             text-shadow: -1px -1px 0 #fff,
-                        1px -1px 0 #fff,
-                        -1px 1px 0 #fff,
-                        1px 1px 0 #fff;
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
             /* 保留换行符 */
             white-space: pre-line;
         }
@@ -98,14 +109,16 @@
         }
     </style>
 </head>
+
 <body>
     <!-- 标题 -->
     <div class="title">{{title}}</div>
-    
+
     <!-- 正文 -->
     <div class="content">{{text}}</div>
 
     <!-- 作者 -->
-    <div class="author">{{author=@Pixelle.AI}}</div>
+    <div class="author">{{author=@생각의창}}</div>
 </body>
+
 </html>

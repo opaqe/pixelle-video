@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="template:media-width" content="1024">
@@ -9,19 +10,26 @@
     <!-- Google Fonts - 中文字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html, body { 
-            width: 1080px; 
-            height: 1920px; 
-            overflow: hidden; 
+        html,
+        body {
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
         }
 
         body {
             font-family: 'Noto Sans SC', 'PingFang SC', 'Source Han Sans', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #F5F1E8; /* 浅色温暖的米黄色背景 */
+            background: #F5F1E8;
+            /* 浅色温暖的米黄色背景 */
             position: relative;
             display: flex;
             flex-direction: column;
@@ -48,7 +56,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 radial-gradient(circle, rgba(120, 90, 70, 0.15) 1.5px, transparent 1.5px),
                 radial-gradient(circle, rgba(100, 75, 60, 0.12) 1px, transparent 1px);
             background-size: 40px 40px, 80px 80px;
@@ -63,7 +71,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 linear-gradient(rgba(110, 85, 65, 0.12) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(110, 85, 65, 0.12) 1px, transparent 1px);
             background-size: 60px 60px;
@@ -107,14 +115,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                repeating-linear-gradient(
-                    45deg,
+            background-image:
+                repeating-linear-gradient(45deg,
                     transparent,
                     transparent 10px,
                     rgba(110, 85, 65, 0.08) 10px,
-                    rgba(110, 85, 65, 0.08) 20px
-                );
+                    rgba(110, 85, 65, 0.08) 20px);
             opacity: 0.6;
         }
 
@@ -130,9 +136,10 @@
             font-size: 80px;
             font-weight: 900;
             line-height: 1.4;
-            color: #1A1611; /* 深棕色/黑色 */
+            color: #1A1611;
+            /* 深棕色/黑色 */
             letter-spacing: 3px;
-            text-shadow: 
+            text-shadow:
                 1px 1px 0 rgba(0, 0, 0, 0.2),
                 2px 2px 2px rgba(0, 0, 0, 0.15);
             /* 模拟略微纹理效果 */
@@ -183,16 +190,17 @@
             font-size: 30px;
             font-family: 'Liu Jian Mao Cao', 'ZCOOL KuaiLe', cursive;
             text-shadow: -1px -1px 0 #000,
-                        1px -1px 0 #000,
-                        -1px 1px 0 #000,
-                        1px 1px 0 #000;
-            margin : 0 20px 20px 0;
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
+            margin: 0 20px 20px 0;
             text-align: right;
             position: relative;
             z-index: 2;
         }
     </style>
 </head>
+
 <body>
     <!-- 背景花纹层 -->
     <div class="bg-pattern">
@@ -215,9 +223,7 @@
 
     <!-- 中央插图 -->
     <div class="content">
-        <img 
-            src="{{image}}"
-        />
+        <img src="{{image}}" />
     </div>
 
     <!-- 底部文字 -->
@@ -225,6 +231,7 @@
         <div class="content-text">{{text}}</div>
     </div>
 
-    <div class="author">{{author=@Pixelle.AI}}</div>
+    <div class="author">{{author=@생각의창}}</div>
 </body>
+
 </html>

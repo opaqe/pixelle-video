@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="template:media-width" content="1024">
@@ -9,18 +10,29 @@
     <!-- Google Fonts - 中文字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Liu+Jian+Mao+Cao&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Liu+Jian+Mao+Cao&family=Ma+Shan+Zheng&display=swap"
+        rel="stylesheet">
     <style>
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html, body { width: 1080px; height: 1920px; overflow: hidden; }
+        html,
+        body {
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
+        }
 
         body {
             font-family: 'Noto Sans SC', 'PingFang SC', 'Source Han Sans', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #fff;
             position: relative;
-            background: transparent; /* 移除黑色背景 */
+            background: transparent;
+            /* 移除黑色背景 */
         }
 
         /* 背景使用图片并做模糊处理，完全覆盖整个页面 */
@@ -43,11 +55,11 @@
             font-size: 92px;
             font-weight: 800;
             line-height: 1.2;
-            text-shadow: 0 6px 22px rgba(0,0,0,0.6),
-                        -2px -2px 0 #000,
-                        2px -2px 0 #000,
-                        -2px 2px 0 #000,
-                        2px 2px 0 #000;
+            text-shadow: 0 6px 22px rgba(0, 0, 0, 0.6),
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000;
             letter-spacing: 4px;
             /* 确保文本不会溢出 */
             word-wrap: break-word;
@@ -66,18 +78,18 @@
             bottom: 20px;
             color: #fff;
             text-shadow: -1px -1px 0 #000,
-                        1px -1px 0 #000,
-                        -1px 1px 0 #000,
-                        1px 1px 0 #000;
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
         }
-        
+
         .author {
             display: flex;
             flex-direction: column;
             gap: 6px;
             letter-spacing: 2px;
         }
-        
+
         .author-name {
             font-size: 30px;
             font-weight: 600;
@@ -85,50 +97,51 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .author-mark {
             width: 8px;
             height: 8px;
             /* border-radius: 50%; */
             /* background: rgba(149, 165, 166, 0.7); */
         }
-        
+
         .author-desc {
             font-size: 22px;
             /* color: #5d6d7e; */
             line-height: 1.3;
             font-weight: 400;
         }
-        
+
         .logo-section {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 8px;
         }
-        
+
         .logo {
             font-size: 24px;
             font-weight: 500;
         }
-        
+
         .logo-marks {
             display: flex;
             gap: 5px;
         }
-        
+
         .logo-mark {
             width: 6px;
             height: 6px;
             border-radius: 50%;
             background: rgba(149, 165, 166, 0.45);
         }
-        
+
         .logo-mark.active {
             background: rgba(149, 165, 166, 0.75);
         }
     </style>
 </head>
+
 <body>
     <div class="bg">
         <div class="title">{{title}}</div>
@@ -137,7 +150,7 @@
         <div class="author">
             <div class="author-name">
                 <span class="author-mark"></span>
-                <div class="logo">{{author=@Pixelle.AI}}</div>
+                <div class="logo">{{author=@생각의창}}</div>
             </div>
             <div class="author-desc">{{describe=Open Source Omnimodal AI Creative Agent}}</div>
         </div>
@@ -164,11 +177,11 @@
                 if (!element || !element.textContent || !element.textContent.trim()) {
                     return;
                 }
-                
+
                 if (!document.body) {
                     return;
                 }
-                
+
                 // 创建一个临时的测量元素
                 const measure = document.createElement('span');
                 measure.style.visibility = 'hidden';
@@ -176,7 +189,7 @@
                 measure.style.top = '-9999px';
                 measure.style.left = '-9999px';
                 measure.style.whiteSpace = 'nowrap';
-                
+
                 // 复制元素的样式
                 const computedStyle = window.getComputedStyle(element);
                 measure.style.fontFamily = computedStyle.fontFamily;
@@ -184,14 +197,14 @@
                 measure.style.fontWeight = computedStyle.fontWeight;
                 measure.style.letterSpacing = computedStyle.letterSpacing;
                 measure.textContent = element.textContent;
-                
+
                 document.body.appendChild(measure);
-                
+
                 // 二分查找合适的字体大小
                 let low = minFontSize;
                 let high = maxFontSize;
                 let bestSize = maxFontSize;
-                
+
                 // 先检查最大字体是否合适
                 measure.style.fontSize = maxFontSize + 'px';
                 if (measure.offsetWidth <= maxWidth) {
@@ -201,7 +214,7 @@
                     while (high - low > 0.5) {
                         const mid = (low + high) / 2;
                         measure.style.fontSize = mid + 'px';
-                        
+
                         if (measure.offsetWidth <= maxWidth) {
                             bestSize = mid;
                             low = mid;
@@ -210,10 +223,10 @@
                         }
                     }
                 }
-                
+
                 // 应用找到的字体大小
                 element.style.fontSize = bestSize + 'px';
-                
+
                 // 清理临时元素
                 if (measure.parentNode) {
                     document.body.removeChild(measure);
@@ -222,7 +235,7 @@
                 console.error('自动调整字体大小出错:', error);
             }
         }
-        
+
         // 页面加载完成后自动调整字体大小
         function initAutoFit() {
             try {
@@ -237,7 +250,7 @@
                 console.error('初始化自动调整字体大小出错:', error);
             }
         }
-        
+
         // 等待 DOM 加载完成
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initAutoFit);
@@ -245,25 +258,25 @@
             // DOM 已经加载完成
             initAutoFit();
         }
-        
+
         // 如果内容是通过模板引擎动态插入的，可以监听内容变化
         // 使用 MutationObserver 监听文本变化
         if (typeof MutationObserver !== 'undefined') {
             try {
-                const observer = new MutationObserver(function(mutations) {
+                const observer = new MutationObserver(function (mutations) {
                     let shouldUpdate = false;
-                    mutations.forEach(function(mutation) {
+                    mutations.forEach(function (mutation) {
                         if (mutation.type === 'childList' || mutation.type === 'characterData') {
                             shouldUpdate = true;
                         }
                     });
-                    
+
                     if (shouldUpdate) {
                         // 延迟执行，避免频繁调用
                         setTimeout(initAutoFit, 100);
                     }
                 });
-                
+
                 // 等待 body 元素存在后再观察
                 if (document.body) {
                     observer.observe(document.body, {
@@ -272,7 +285,7 @@
                         characterData: true
                     });
                 } else {
-                    document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('DOMContentLoaded', function () {
                         if (document.body) {
                             observer.observe(document.body, {
                                 childList: true,
@@ -288,4 +301,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="template:media-width" content="1024">
@@ -8,7 +9,9 @@
     <!-- Google Fonts - 手写艺术字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -16,7 +19,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             width: 1920px;
             height: 1080px;
             overflow: hidden;
@@ -55,8 +59,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
 
         /* Title */
@@ -69,10 +80,10 @@
             text-align: right;
             /* 黑色描边 */
             text-shadow: 0 0 0 #0e0a0a,
-                    -2px -2px 0 #0e0a0a,
-                    2px -2px 0 #0e0a0a,
-                    -2px  2px 0 #0e0a0a,
-                    2px  2px 0 #0e0a0a;
+                -2px -2px 0 #0e0a0a,
+                2px -2px 0 #0e0a0a,
+                -2px 2px 0 #0e0a0a,
+                2px 2px 0 #0e0a0a;
         }
 
         /* Main Content */
@@ -133,11 +144,11 @@
             font-style: italic;
             /* 黑色描边 6px */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9),
-                        -4px -4px 4px #0e0a0a,
-                        4px -4px 4px #0e0a0a,
-                        -4px  4px 4px #0e0a0a,
-                        4px  4px 4px #0e0a0a,
-                        0 8px 16px rgba(0,0,0,0.5);
+                -4px -4px 4px #0e0a0a,
+                4px -4px 4px #0e0a0a,
+                -4px 4px 4px #0e0a0a,
+                4px 4px 4px #0e0a0a,
+                0 8px 16px rgba(0, 0, 0, 0.5);
             /* 手写艺术字体 */
             font-family: 'ZCOOL XiaoWei', cursive, serif;
         }
@@ -153,7 +164,7 @@
             bottom: 32px;
             color: #fff;
         }
-        
+
         .author {
             font-size: 50px;
             font-weight: 500;
@@ -163,6 +174,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Stars background -->
@@ -186,7 +198,7 @@
     </div>
 
     <div class="footer">
-        <div class="author">{{author=@Pixelle.AI}}</div>
+        <div class="author">{{author=@생각의창}}</div>
     </div>
 
     <script>
@@ -203,4 +215,5 @@
         }
     </script>
 </body>
+
 </html>
