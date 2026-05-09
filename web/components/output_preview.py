@@ -40,6 +40,24 @@ def render_output_preview(pixelle_video, video_params):
         render_single_output(pixelle_video, video_params)
 
 
+def render_video_script_preview(narrations):
+    """Render narrations generated during AI Creation."""
+    if not narrations:
+        return
+    
+    st.markdown(f"**{tr('mode.generate')} - {tr('section.content_input')}**")
+    for i, narration in enumerate(narrations, 1):
+        st.markdown(f"**{tr('history.detail.frame_index', index=i)}**")
+        st.markdown(narration)
+
+
+def get_storyboard_narrations(storyboard):
+    """Extract narration text from a storyboard."""
+    if not storyboard or not storyboard.frames:
+        return []
+    return [frame.narration for frame in storyboard.frames]
+
+
 def render_single_output(pixelle_video, video_params):
     """Render single video generation output (original logic, unchanged)"""
     # Extract parameters from video_params dict
@@ -84,6 +102,7 @@ def render_single_output(pixelle_video, video_params):
             # Show progress
             progress_bar = st.progress(0)
             status_text = st.empty()
+            script_preview = st.empty()
             
             # Record start time for generation
             import time
@@ -112,6 +131,14 @@ def render_single_output(pixelle_video, video_params):
                             current=event.frame_current,
                             total=event.frame_total
                         )
+                    elif event.event_type == "narrations_generated":
+                        message = tr("asset_based.progress.script_complete", fallback="Script generation complete")
+                        if mode == "generate" and event.data:
+                            narrations = event.data.get("narrations", [])
+                            if narrations:
+                                with script_preview.container():
+                                    render_video_script_preview(narrations)
+                                    st.markdown("---")
                     else:
                         # Simple events: use i18n key directly
                         message = tr(f"progress.{event.event_type}")
@@ -163,6 +190,7 @@ def render_single_output(pixelle_video, video_params):
                 
                 progress_bar.progress(100)
                 status_text.text(tr("status.success"))
+                script_preview.empty()
                 
                 # Display success message
                 st.success(tr("status.video_generated", path=result.video_path))
@@ -186,6 +214,13 @@ def render_single_output(pixelle_video, video_params):
                 st.caption(info_text)
                 
                 st.markdown("---")
+                
+                # Show generated video script for AI Creation mode
+                if mode == "generate" and hasattr(result, "storyboard"):
+                    narrations = get_storyboard_narrations(result.storyboard)
+                    if narrations:
+                        render_video_script_preview(narrations)
+                        st.markdown("---")
                 
                 # Video preview
                 if os.path.exists(result.video_path):

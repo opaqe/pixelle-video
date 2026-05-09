@@ -120,6 +120,12 @@ class StandardPipeline(LinearVideoPipeline):
                 min_words=min_words,
                 max_words=max_words
             )
+            self._report_progress(
+                ctx.progress_callback,
+                "narrations_generated",
+                0.10,
+                data={"narrations": ctx.narrations}
+            )
             logger.info(f"✅ Generated {len(ctx.narrations)} narrations")
         else:  # fixed
             self._report_progress(ctx.progress_callback, "splitting_script", 0.05)

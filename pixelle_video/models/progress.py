@@ -17,7 +17,7 @@ Provides structured progress events for UI layer to consume and translate.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -56,6 +56,7 @@ class ProgressEvent:
     step: Optional[int] = None  # 1-4 for frame processing steps
     action: Optional[str] = None  # "audio", "image", "compose", "video"
     extra_info: Optional[str] = None  # Additional information (e.g., batch progress)
+    data: Optional[Any] = None  # Optional structured data for UI previews
     
     def __post_init__(self):
         """Validate progress value"""

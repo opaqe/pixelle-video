@@ -1,0 +1,280 @@
+{
+  "1072": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "1104",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "1078": {
+    "inputs": {
+      "seed": -1
+    },
+    "class_type": "Seed (rgthree)",
+    "_meta": {
+      "title": "Seed (rgthree)"
+    }
+  },
+  "1100": {
+    "inputs": {
+      "vae_name": "z_image\\ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "1101": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "1113",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "1102": {
+    "inputs": {
+      "clip_name": "z_image\\qwen_3_4b.safetensors",
+      "type": "lumina2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "1104": {
+    "inputs": {
+      "tile_size": 608,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8,
+      "samples": [
+        "1111",
+        0
+      ],
+      "vae": [
+        "1100",
+        0
+      ]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE Decode (Tiled)"
+    }
+  },
+  "1105": {
+    "inputs": {
+      "width": [
+        "1495",
+        0
+      ],
+      "height": [
+        "1496",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "1108": {
+    "inputs": {
+      "text": [
+        "1507",
+        0
+      ],
+      "clip": [
+        "1113",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "prompt"
+    }
+  },
+  "1111": {
+    "inputs": {
+      "seed": [
+        "1078",
+        0
+      ],
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "1101",
+        0
+      ],
+      "positive": [
+        "1108",
+        0
+      ],
+      "negative": [
+        "1112",
+        0
+      ],
+      "latent_image": [
+        "1105",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "1112": {
+    "inputs": {
+      "conditioning": [
+        "1108",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "1113": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": false,
+        "lora": "ZIT_ani\\DetailN_Z_Image.safetensors",
+        "strength": 1
+      },
+      "lora_2": {
+        "on": false,
+        "lora": "ZIT_ani\\Anime_CRABDM(Anime CRABDM style).safetensors",
+        "strength": 0.7
+      },
+      "lora_3": {
+        "on": false,
+        "lora": "ZIT_ani\\Z-Brushwork.safetensors",
+        "strength": 1
+      },
+      "lora_4": {
+        "on": false,
+        "lora": "ZIT_ani\\Z-OrientalInk.safetensors",
+        "strength": 1
+      },
+      "lora_5": {
+        "on": true,
+        "lora": "ZIT_ani\\Z-TintedLines.safetensors",
+        "strength": 0.7
+      },
+      "lora_6": {
+        "on": false,
+        "lora": "ZIT_ani\\retro_scifi-90s_anime_style_Z_image_turbo.safetensors",
+        "strength": 0.7
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "1144",
+        0
+      ],
+      "clip": [
+        "1102",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "1144": {
+    "inputs": {
+      "unet_name": "z_image\\z_image_turbo_bf16.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "1148": {
+    "inputs": {
+      "text": "hshiArt, handdrawnlineart, sketchylineart"
+    },
+    "class_type": "TextInput_",
+    "_meta": {
+      "title": "Z-TintedLines"
+    }
+  },
+  "1495": {
+    "inputs": {
+      "value": 768
+    },
+    "class_type": "easy int",
+    "_meta": {
+      "title": "$width.value"
+    }
+  },
+  "1496": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "easy int",
+    "_meta": {
+      "title": "$height.value"
+    }
+  },
+  "1498": {
+    "inputs": {
+      "text": "stylized illustration, soft digital painting, A thoughtful man with warm, expressive brown eyes, medium-length dark brown hair styled neatly, and wearing muted earth-toned linen clothing, observing a subtly shifting mosaic on the ground, his expression showing a complex mix of understanding and gentle realization, set in a quiet, sun-dappled antique study with stacked, shadowed books in the background and polished wood details in the foreground, balanced composition, soft lighting, contemplative emotional mood"
+    },
+    "class_type": "TextInput_",
+    "_meta": {
+      "title": "$prompt.text"
+    }
+  },
+  "1506": {
+    "inputs": {
+      "any_05": [
+        "1148",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "Any Switch (rgthree)"
+    }
+  },
+  "1507": {
+    "inputs": {
+      "delimiter": ", ",
+      "string1": [
+        "1506",
+        0
+      ],
+      "string2": [
+        "1498",
+        0
+      ]
+    },
+    "class_type": "JoinStrings",
+    "_meta": {
+      "title": "Join Strings"
+    }
+  }
+}
