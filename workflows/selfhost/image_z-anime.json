@@ -1,0 +1,189 @@
+{
+  "2": {
+    "inputs": {
+      "shift": 3.5,
+      "model": [
+        "90",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "⚙️ Model Sampling"
+    }
+  },
+  "6": {
+    "inputs": {
+      "width": [
+        "141",
+        0
+      ],
+      "height": [
+        "142",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "📐 Image Size"
+    }
+  },
+  "11": {
+    "inputs": {
+      "samples": [
+        "17",
+        0
+      ],
+      "vae": [
+        "91",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "🎨 VAE Decode"
+    }
+  },
+  "17": {
+    "inputs": {
+      "seed": [
+        "54",
+        0
+      ],
+      "steps": 10,
+      "cfg": 1.1,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 1,
+      "model": [
+        "2",
+        0
+      ],
+      "positive": [
+        "20",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "🎨 Generate Image"
+    }
+  },
+  "20": {
+    "inputs": {
+      "text": [
+        "140",
+        0
+      ],
+      "clip": [
+        "89",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "✨ Positive Prompt"
+    }
+  },
+  "54": {
+    "inputs": {
+      "seed": -1
+    },
+    "class_type": "Seed (rgthree)",
+    "_meta": {
+      "title": "🎲 Seed Control"
+    }
+  },
+  "89": {
+    "inputs": {
+      "clip_name": "z_image\\qwen_3_4b-bf16.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "90": {
+    "inputs": {
+      "unet_name": "z_image\\z-anime-distill-8step-bf16.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "91": {
+    "inputs": {
+      "vae_name": "zimagebase\\ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "93": {
+    "inputs": {
+      "filename_prefix": "Z-Anime",
+      "images": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "💾 Save Z-Anime"
+    }
+  },
+  "100": {
+    "inputs": {
+      "text": "Avoid blurry, low-quality, noisy, oversmoothed, distorted or messy results. Avoid bad anatomy, deformed hands, extra fingers, fused fingers, missing fingers, broken limbs, duplicate body parts, asymmetrical eyes, distorted face, warped features, wrong proportions, cropped head, cut-off body, bad framing, unreadable text, watermark, logo, signature, background clutter, compression artifacts, muddy colors, and inconsistent details. Keep the image clean, sharp, coherent, expressive, and anatomically believable without removing anime styling.",
+      "clip": [
+        "89",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "➖ Negative Prompt"
+    }
+  },
+  "140": {
+    "inputs": {
+      "text": "stylized illustration, soft digital painting, A thoughtful man with warm, expressive brown eyes, medium-length dark brown hair styled neatly, and wearing muted earth-toned linen clothing, observing a subtly shifting mosaic on the ground, his expression showing a complex mix of understanding and gentle realization, set in a quiet, sun-dappled antique study with stacked, shadowed books in the background and polished wood details in the foreground, balanced composition, soft lighting, contemplative emotional mood"
+    },
+    "class_type": "TextInput_",
+    "_meta": {
+      "title": "$prompt.text"
+    }
+  },
+  "141": {
+    "inputs": {
+      "value": 768
+    },
+    "class_type": "easy int",
+    "_meta": {
+      "title": "$width.value"
+    }
+  },
+  "142": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "easy int",
+    "_meta": {
+      "title": "$height.value"
+    }
+  }
+}
