@@ -14,7 +14,9 @@
 Lightweight batch manager for Streamlit (Simplified YAGNI version)
 """
 import time
+import shutil
 import traceback
+from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable
 from loguru import logger
 
@@ -111,6 +113,34 @@ class SimpleBatchManager:
                 # Execute generation
                 from web.utils.async_helpers import run_async
                 result = run_async(pixelle_video.generate_video(**task_params))
+                
+                # Copy to output folder
+                try:
+                    from pathlib import Path
+                    output_dir = Path("output")
+                    output_dir.mkdir(exist_ok=True)
+                    
+                    title = task_params.get("title", "")
+                    if title and title.strip():
+                        import re
+                        safe_title = re.sub(r'[^\w\s-]', '', title).strip()
+                        safe_title = re.sub(r'[-\s]+', '_', safe_title)
+                        base_name = safe_title if safe_title else "video"
+                    else:
+                        base_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        
+                    file_name = f"{base_name}.mp4"
+                    output_path = output_dir / file_name
+                    
+                    if output_path.exists():
+                        now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        file_name = f"{base_name}_{now_str}.mp4"
+                        output_path = output_dir / file_name
+                        
+                    shutil.copy2(result.video_path, output_path)
+                    logger.info(f"Batch Video also saved to output folder: {output_path}")
+                except Exception as e:
+                    logger.error(f"Failed to copy batch video to output folder: {e}")
                 
                 # Extract task_id from video_path (e.g., output/20251118_173821_f96a/final.mp4)
                 from pathlib import Path

@@ -16,6 +16,8 @@ Output preview components for web UI (right column)
 
 import base64
 import os
+import shutil
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
@@ -184,6 +186,33 @@ def render_single_output(pixelle_video, video_params):
                     video_params["template_params"] = custom_values_for_video
                 
                 result = run_async(pixelle_video.generate_video(**video_params))
+                
+                # Copy to output folder
+                try:
+                    output_dir = Path("output")
+                    output_dir.mkdir(exist_ok=True)
+                    
+                    if title and title.strip():
+                        # Make filename safe
+                        import re
+                        safe_title = re.sub(r'[^\w\s-]', '', title).strip()
+                        safe_title = re.sub(r'[-\s]+', '_', safe_title)
+                        base_name = safe_title if safe_title else "video"
+                    else:
+                        base_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        
+                    file_name = f"{base_name}.mp4"
+                    output_path = output_dir / file_name
+                    
+                    if output_path.exists():
+                        now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        file_name = f"{base_name}_{now_str}.mp4"
+                        output_path = output_dir / file_name
+                        
+                    shutil.copy2(result.video_path, output_path)
+                    logger.info(f"Video also saved to output folder: {output_path}")
+                except Exception as e:
+                    logger.error(f"Failed to copy video to output folder: {e}")
                 
                 # Calculate total generation time
                 total_generation_time = time.time() - start_time
