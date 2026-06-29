@@ -165,6 +165,7 @@ def render_single_output(pixelle_video, video_params):
                 # Generate video (directly pass parameters)
                 # Note: media_width and media_height are auto-determined from template
                 video_params = {
+                    "language": get_language(),
                     "text": text,
                     "mode": mode,
                     "title": title if title else None,
@@ -322,6 +323,7 @@ def render_batch_output(pixelle_video, video_params):
         ):
             # Prepare shared config
             shared_config = {
+                "language": get_language(),
                 "title_prefix": video_params.get("title_prefix"),
                 "n_scenes": video_params.get("n_scenes") or 5,
                 "media_workflow": video_params.get("media_workflow"),

@@ -52,8 +52,8 @@ def check_and_warn_selfhost_workflow(workflow_path: str):
     is_selfhost = workflow_path.startswith("selfhost/")
     
     # Only show alert when transitioning TO selfhost
-    if is_selfhost:
-        _show_js_alert(workflow_path)
+    # if is_selfhost:
+    #     _show_js_alert(workflow_path)
 
 
 def _show_js_alert(workflow_path: str):

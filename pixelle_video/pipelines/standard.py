@@ -118,7 +118,8 @@ class StandardPipeline(LinearVideoPipeline):
                 topic=text,
                 n_scenes=n_scenes,
                 min_words=min_words,
-                max_words=max_words
+                max_words=max_words,
+                language=ctx.params.get("language"),
             )
             self._report_progress(
                 ctx.progress_callback,
@@ -150,11 +151,12 @@ class StandardPipeline(LinearVideoPipeline):
             logger.info(f"   Title: '{title}' (user-specified)")
         else:
             self._report_progress(ctx.progress_callback, "generating_title", 0.01)
+            _language = ctx.params.get("language")
             if mode == "generate":
-                ctx.title = await generate_title(self.llm, text, strategy="auto")
+                ctx.title = await generate_title(self.llm, text, strategy="auto", language=_language)
                 logger.info(f"   Title: '{ctx.title}' (auto-generated)")
             else:  # fixed
-                ctx.title = await generate_title(self.llm, text, strategy="llm")
+                ctx.title = await generate_title(self.llm, text, strategy="llm", language=_language)
                 logger.info(f"   Title: '{ctx.title}' (LLM-generated)")
 
     async def plan_visuals(self, ctx: PipelineContext):

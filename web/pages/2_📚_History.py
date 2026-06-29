@@ -208,6 +208,16 @@ def render_grid_task_card(task: dict, pixelle_video):
         
         # Meta info (one line)
         st.caption(f"🕒 {format_datetime(created_at)} | ⏱️ {format_duration(duration)} | 🎬 {n_frames}")
+
+        # Storyboard template used (basename) for at-a-glance reuse reference
+        card_template = ""
+        sb = detail.get("storyboard") if detail else None
+        if sb is not None and getattr(sb, "config", None) is not None:
+            card_template = getattr(sb.config, "frame_template", "") or ""
+        if not card_template and detail and detail.get("metadata"):
+            card_template = detail["metadata"].get("input", {}).get("frame_template", "") or ""
+        if card_template:
+            st.caption(f"🧩 {os.path.basename(card_template)}")
         
         # Action buttons (compact, 3 columns)
         col1, col2, col3 = st.columns(3)
@@ -292,7 +302,74 @@ def render_task_detail_modal(task_id: str, pixelle_video):
         st.markdown(f"**{tr('history.detail.n_scenes')}:** {input_params.get('n_scenes', 'N/A')}")
         st.markdown(f"**{tr('history.detail.tts_mode')}:** {input_params.get('tts_inference_mode', 'N/A')}")
         st.markdown(f"**{tr('history.detail.voice')}:** {input_params.get('tts_voice', 'N/A')}")
-        
+
+        # Storyboard template used (so the same template can be reused for new work)
+        frame_template = ""
+        if storyboard is not None and getattr(storyboard, "config", None) is not None:
+            frame_template = getattr(storyboard.config, "frame_template", "") or ""
+        if not frame_template:
+            frame_template = input_params.get("frame_template", "") or ""
+        st.markdown(f"**{tr('history.detail.frame_template')}:** {frame_template or 'N/A'}")
+        if frame_template:
+            if st.button(
+                f"🔁 {tr('history.detail.reuse_template')}",
+                key=f"reuse_template_{task_id}",
+                use_container_width=True,
+            ):
+                try:
+                    from pixelle_video.utils.template_util import get_template_type
+                    t_type = get_template_type(frame_template)
+                except Exception:
+                    t_type = "image"
+                # Pre-select this template on Home and prevent the
+                # template-type-change reset inside render_style_config.
+                st.session_state["template_type_selector"] = t_type
+                st.session_state["last_template_type"] = t_type
+                st.session_state["selected_template"] = frame_template
+
+                # Carry over every setting except the video script (text/title/topic)
+                # so the next task reuses the same scenes, TTS and model.
+                from web.utils.reuse import set_reuse_params
+                reuse = {}
+                for k in (
+                    "mode", "split_mode", "n_scenes", "tts_inference_mode",
+                    "tts_voice", "tts_speed", "media_workflow", "bgm_path", "bgm_volume",
+                    "prompt_prefix", "template_params", "api_video_params", "title_prefix",
+                ):
+                    v = input_params.get(k)
+                    if v not in (None, "", {}):
+                        reuse[k] = v
+                cfg = getattr(storyboard, "config", None) if storyboard is not None else None
+                if cfg is not None:
+                    reuse.setdefault("n_scenes", getattr(cfg, "n_storyboard", None))
+                    reuse.setdefault("tts_inference_mode", getattr(cfg, "tts_inference_mode", None))
+                    reuse.setdefault("tts_voice", getattr(cfg, "voice_id", None))
+                    reuse.setdefault("tts_speed", getattr(cfg, "tts_speed", None))
+                    reuse.setdefault("media_workflow", getattr(cfg, "media_workflow", None))
+                    reuse.setdefault("template_params", getattr(cfg, "template_params", None))
+                    reuse.setdefault("api_video_params", getattr(cfg, "api_video_params", None))
+                set_reuse_params({k: v for k, v in reuse.items() if v not in (None, "", {})})
+
+                st.session_state[f"detail_{task_id}"] = False
+                st.switch_page("pages/1_🎬_Home.py")
+
+        # Common prompt prefix
+        prompt_prefix_used = input_params.get("prompt_prefix", "")
+        if prompt_prefix_used:
+            st.markdown(f"**{tr('history.detail.prompt_prefix')}:** {truncate_text(str(prompt_prefix_used), 80)}")
+
+        # Advanced template parameters (brand, describe, ...)
+        template_params_used = input_params.get("template_params")
+        if not template_params_used and storyboard is not None and getattr(storyboard, "config", None) is not None:
+            template_params_used = getattr(storyboard.config, "template_params", None)
+        if template_params_used:
+            with st.expander(tr("history.detail.template_params"), expanded=False):
+                st.json(template_params_used)
+
+        # All saved input parameters (full reproducibility reference)
+        with st.expander(tr("history.detail.all_params"), expanded=False):
+            st.json({k: v for k, v in input_params.items() if k != "progress_callback"})
+
         # Input text
         with st.expander(tr("history.detail.text"), expanded=True):
             st.text_area(

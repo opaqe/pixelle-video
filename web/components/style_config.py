@@ -55,6 +55,8 @@ def is_api_workflow(workflow_key: str | None) -> bool:
 
 def render_style_config(pixelle_video):
     """Render style configuration section (middle column)"""
+    from web.utils.reuse import get_reuse_params, reuse_index, reuse_scalar, reuse_template_param
+    _rp = get_reuse_params()
     # TTS Section (moved from left column)
     # ====================================================================
     with st.container(border=True):
@@ -71,12 +73,15 @@ def render_style_config(pixelle_video):
         tts_config = comfyui_config["tts"]
         
         # Inference mode selection
+        _tts_modes = ["local", "voicebox", "comfyui"]
+        _cfg_mode = tts_config.get("inference_mode", "voicebox")
+        _default_mode_index = _tts_modes.index(_cfg_mode) if _cfg_mode in _tts_modes else 1
         tts_mode = st.radio(
             tr("tts.inference_mode"),
-            ["local", "voicebox", "comfyui"],
+            _tts_modes,
             horizontal=True,
             format_func=lambda x: tr(f"tts.mode.{x}") if x != "voicebox" else "VoiceBox",
-            index=["local", "voicebox", "comfyui"].index(tts_config.get("inference_mode", "voicebox")) if tts_config.get("inference_mode", "voicebox") in ["local", "voicebox", "comfyui"] else 1,
+            index=reuse_index("tts_inference_mode", _tts_modes, _rp.get("tts_inference_mode"), _default_mode_index),
             key="tts_inference_mode"
         )
         
@@ -123,7 +128,7 @@ def render_style_config(pixelle_video):
                 selected_voice_display = st.selectbox(
                     tr("tts.voice_selector"),
                     voice_options,
-                    index=default_voice_index,
+                    index=reuse_index("tts_local_voice", voice_ids, _rp.get("tts_voice"), default_voice_index),
                     key="tts_local_voice"
                 )
                 
@@ -137,7 +142,7 @@ def render_style_config(pixelle_video):
                     tr("tts.speed"),
                     min_value=0.5,
                     max_value=2.0,
-                    value=saved_speed,
+                    value=float(max(0.5, min(2.0, reuse_scalar("tts_local_speed", _rp.get("tts_speed"), saved_speed)))),
                     step=0.1,
                     format="%.1fx",
                     key="tts_local_speed"
@@ -172,7 +177,7 @@ def render_style_config(pixelle_video):
                 selected_voice_display = st.selectbox(
                     "VoiceBox Profile",
                     vb_options,
-                    index=default_vb_index,
+                    index=reuse_index("tts_voicebox_profile", vb_ids, _rp.get("tts_voice"), default_vb_index),
                     key="tts_voicebox_profile"
                 )
                 selected_voice = vb_ids[vb_options.index(selected_voice_display)]
@@ -606,25 +611,25 @@ def render_style_config(pixelle_video):
                     if param_type == 'text':
                         custom_values_for_video[param_name] = st.text_input(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'number':
                         custom_values_for_video[param_name] = st.number_input(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'color':
                         custom_values_for_video[param_name] = st.color_picker(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'bool':
                         custom_values_for_video[param_name] = st.checkbox(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
             
@@ -638,25 +643,25 @@ def render_style_config(pixelle_video):
                     if param_type == 'text':
                         custom_values_for_video[param_name] = st.text_input(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'number':
                         custom_values_for_video[param_name] = st.number_input(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'color':
                         custom_values_for_video[param_name] = st.color_picker(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
                     elif param_type == 'bool':
                         custom_values_for_video[param_name] = st.checkbox(
                             label,
-                            value=default,
+                            value=reuse_template_param(param_name, default),
                             key=f"video_custom_{param_name}"
                         )
         
@@ -776,10 +781,12 @@ def render_style_config(pixelle_video):
                     default_source_index = index
                     break
             source_key = "standard_video_workflow_source" if template_media_type == "video" else "standard_image_workflow_source"
+            _reuse_wf = _rp.get("media_workflow")
+            _reuse_source = _reuse_wf.split("/")[0] if _reuse_wf and "/" in _reuse_wf else None
             workflow_source = st.radio(
                 "生成来源" if get_language() == "zh_CN" else "Generation source",
                 source_options,
-                index=default_source_index,
+                index=reuse_index(source_key, source_options, _reuse_source, default_source_index),
                 format_func=workflow_source_label,
                 horizontal=True,
                 key=source_key,
@@ -826,7 +833,7 @@ def render_style_config(pixelle_video):
             workflow_display = st.selectbox(
                 "Workflow" if workflow_source != "api" else ("API 模型" if get_language() == "zh_CN" else "API model"),
                 workflow_options if workflow_options else ["No workflows found"],
-                index=default_workflow_index,
+                index=reuse_index(f"{source_key}_select", workflow_keys, _rp.get("media_workflow"), default_workflow_index),
                 label_visibility="visible",
                 key=f"{source_key}_select",
                 help=workflow_select_help(),
@@ -886,11 +893,12 @@ def render_style_config(pixelle_video):
             # Prompt prefix input (temporary, not saved to config)
             prompt_prefix = st.text_area(
                 tr('style.prompt_prefix'),
-                value=current_prefix,
+                value=reuse_scalar("style_prompt_prefix", _rp.get("prompt_prefix"), current_prefix),
                 placeholder=tr("style.prompt_prefix_placeholder"),
                 height=80,
                 label_visibility="visible",
-                help=tr("style.prompt_prefix_help")
+                help=tr("style.prompt_prefix_help"),
+                key="style_prompt_prefix",
             )
         
             # Media preview expander

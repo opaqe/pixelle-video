@@ -83,6 +83,11 @@ def main():
             # Delegate rendering
             pipeline.render(pixelle_video)
 
+    # "Reuse settings" values are applied once to the inputs above, then cleared
+    # so the user's subsequent manual edits are never overridden.
+    from web.utils.reuse import clear_reuse_params
+    clear_reuse_params()
+
 
 if __name__ == "__main__":
     main()

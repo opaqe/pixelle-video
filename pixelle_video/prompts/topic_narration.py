@@ -135,21 +135,25 @@ def build_topic_narration_prompt(
     topic: str,
     n_storyboard: int,
     min_words: int,
-    max_words: int
+    max_words: int,
+    language: str | None = None,
 ) -> str:
     """
     Build topic narration prompt
-    
+
     Args:
         topic: Topic or theme
         n_storyboard: Number of storyboard frames
         min_words: Minimum word count
         max_words: Maximum word count
-    
+        language: Output language code (e.g. "ko_KR"); forces narration language
+
     Returns:
         Formatted prompt
     """
-    return TOPIC_NARRATION_PROMPT.format(
+    from pixelle_video.prompts._language import language_directive
+
+    return language_directive(language) + TOPIC_NARRATION_PROMPT.format(
         topic=topic,
         n_storyboard=n_storyboard,
         min_words=min_words,

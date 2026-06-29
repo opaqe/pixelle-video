@@ -24,11 +24,23 @@ from typing import List, Optional, Literal
 from loguru import logger
 
 
+def _resolve_language(language: Optional[str]) -> Optional[str]:
+    """Resolve the output language: explicit arg first, else the configured UI language."""
+    if language:
+        return language
+    try:
+        from pixelle_video.config import config_manager
+        return config_manager.config.language
+    except Exception:
+        return None
+
+
 async def generate_title(
     llm_service,
     content: str,
     strategy: Literal["auto", "direct", "llm"] = "auto",
-    max_length: int = 15
+    max_length: int = 15,
+    language: Optional[str] = None,
 ) -> str:
     """
     Generate title from content
@@ -58,7 +70,7 @@ async def generate_title(
     from pixelle_video.prompts import build_title_generation_prompt
     
     # Pass max_length to prompt so LLM knows the character limit
-    prompt = build_title_generation_prompt(content, max_length=max_length)
+    prompt = build_title_generation_prompt(content, max_length=max_length, language=_resolve_language(language))
     response = await llm_service(prompt, temperature=0.7, max_tokens=2000)
     
     # Clean up response
@@ -97,7 +109,8 @@ async def generate_narrations_from_topic(
     topic: str,
     n_scenes: int = 5,
     min_words: int = 5,
-    max_words: int = 20
+    max_words: int = 20,
+    language: Optional[str] = None,
 ) -> List[str]:
     """
     Generate narrations from topic using LLM
@@ -120,7 +133,8 @@ async def generate_narrations_from_topic(
         topic=topic,
         n_storyboard=n_scenes,
         min_words=min_words,
-        max_words=max_words
+        max_words=max_words,
+        language=_resolve_language(language),
     )
     
     response = await llm_service(
@@ -157,7 +171,8 @@ async def generate_narrations_from_content(
     content: str,
     n_scenes: int = 5,
     min_words: int = 5,
-    max_words: int = 20
+    max_words: int = 20,
+    language: Optional[str] = None,
 ) -> List[str]:
     """
     Generate narrations from user-provided content using LLM
@@ -180,7 +195,8 @@ async def generate_narrations_from_content(
         content=content,
         n_storyboard=n_scenes,
         min_words=min_words,
-        max_words=max_words
+        max_words=max_words,
+        language=_resolve_language(language),
     )
     
     response = await llm_service(

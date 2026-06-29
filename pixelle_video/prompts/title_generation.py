@@ -64,21 +64,24 @@ Requirements:
 Title:"""
 
 
-def build_title_generation_prompt(content: str, max_length: int = 15) -> str:
+def build_title_generation_prompt(content: str, max_length: int = 15, language: str | None = None) -> str:
     """
     Build title generation prompt
-    
+
     Args:
         content: Content to generate title from
         max_length: Maximum title length in characters (default: 15)
-    
+        language: Output language code (e.g. "ko_KR"); forces title language
+
     Returns:
         Formatted prompt with character limit
     """
+    from pixelle_video.prompts._language import language_directive
+
     # Take first 500 chars to avoid overly long prompts
     content_preview = content[:500]
-    
-    return TITLE_GENERATION_PROMPT.format(
+
+    return language_directive(language) + TITLE_GENERATION_PROMPT.format(
         content=content_preview,
         max_length=max_length
     )

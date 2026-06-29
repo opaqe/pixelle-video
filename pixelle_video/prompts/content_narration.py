@@ -81,21 +81,25 @@ def build_content_narration_prompt(
     content: str,
     n_storyboard: int,
     min_words: int,
-    max_words: int
+    max_words: int,
+    language: str | None = None,
 ) -> str:
     """
     Build content refinement narration prompt
-    
+
     Args:
         content: User-provided content
         n_storyboard: Number of storyboard frames
         min_words: Minimum word count
         max_words: Maximum word count
-    
+        language: Output language code (e.g. "ko_KR"); forces narration language
+
     Returns:
         Formatted prompt
     """
-    return CONTENT_NARRATION_PROMPT.format(
+    from pixelle_video.prompts._language import language_directive
+
+    return language_directive(language) + CONTENT_NARRATION_PROMPT.format(
         content=content,
         n_storyboard=n_storyboard,
         min_words=min_words,

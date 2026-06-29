@@ -39,12 +39,17 @@ def render_content_input():
             # Single task mode (original logic, unchanged)
             # ================================================================
             # Processing mode selection
+            from web.utils.reuse import get_reuse_params, reuse_index, reuse_scalar
+            _rp = get_reuse_params()
+            _mode_opts = ["generate", "fixed"]
             mode = st.radio(
                 "Processing Mode",
-                ["generate", "fixed"],
+                _mode_opts,
+                index=reuse_index("ci_mode", _mode_opts, _rp.get("mode"), 0),
                 horizontal=True,
                 format_func=lambda x: tr(f"mode.{x}"),
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                key="ci_mode",
             )
             
             # Text input (unified for both modes)
@@ -66,12 +71,14 @@ def render_content_input():
                     "line": tr("split.mode_line"),
                     "sentence": tr("split.mode_sentence"),
                 }
+                _split_opts = list(split_mode_options.keys())
                 split_mode = st.selectbox(
                     tr("split.mode_label"),
-                    options=list(split_mode_options.keys()),
+                    options=_split_opts,
                     format_func=lambda x: split_mode_options[x],
-                    index=0,  # Default to paragraph mode
-                    help=tr("split.mode_help")
+                    index=reuse_index("ci_split_mode", _split_opts, _rp.get("split_mode"), 0),
+                    help=tr("split.mode_help"),
+                    key="ci_split_mode",
                 )
             else:
                 split_mode = "paragraph"  # Default for generate mode (not used)
@@ -89,9 +96,10 @@ def render_content_input():
                     tr("video.frames"),
                     min_value=3,
                     max_value=30,
-                    value=5,
+                    value=max(3, min(30, int(reuse_scalar("ci_n_scenes", _rp.get("n_scenes"), 5)))),
                     help=tr("video.frames_help"),
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    key="ci_n_scenes",
                 )
                 st.caption(tr("video.frames_label", n=n_scenes))
             else:
@@ -218,10 +226,14 @@ def render_bgm_section(key_prefix="", default_none=False):
         if not default_none and "default.mp3" in bgm_files:
             default_index = bgm_options.index("default.mp3")
         
+        from web.utils.reuse import get_reuse_params, reuse_index, reuse_scalar
+        import os as _os
+        _rp = get_reuse_params()
+        _reuse_bgm = _os.path.basename(_rp.get("bgm_path") or "") or None
         bgm_choice = st.selectbox(
             "BGM",
             bgm_options,
-            index=default_index,
+            index=reuse_index(f"{key_prefix}bgm_selector", bgm_options, _reuse_bgm, default_index),
             label_visibility="collapsed",
             key=f"{key_prefix}bgm_selector"
         )
@@ -232,7 +244,7 @@ def render_bgm_section(key_prefix="", default_none=False):
                 tr("bgm.volume"),
                 min_value=0.0,
                 max_value=0.5,
-                value=0.2,
+                value=float(max(0.0, min(0.5, reuse_scalar(f"{key_prefix}bgm_volume_slider", _rp.get("bgm_volume"), 0.2)))),
                 step=0.01,
                 format="%.2f",
                 key=f"{key_prefix}bgm_volume_slider",
