@@ -79,6 +79,8 @@
         }
 
         @media (max-width: 1080px) { .title { font-size: 84px; } .caption { font-size: 48px; bottom: 600px; } }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 <body>

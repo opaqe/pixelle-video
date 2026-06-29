@@ -110,6 +110,8 @@
                 -1px 1px 0 #000,
                 1px 1px 0 #000;
         }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 

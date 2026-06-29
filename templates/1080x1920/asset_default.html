@@ -120,6 +120,8 @@
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px);
         }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 

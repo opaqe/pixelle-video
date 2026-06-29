@@ -167,6 +167,9 @@
             line-height: 1.4;
             letter-spacing: 2px;
             position: relative;
+            /* Wrap by word (keep Korean/CJK words intact), never break mid-word */
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
 
         .video-title::after {
@@ -338,6 +341,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            /* Wrap by word (keep Korean/CJK words intact), never break mid-word */
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
 
         /* Minimal quote marks */

@@ -232,6 +232,8 @@
             color: rgba(255, 255, 255, 0.8);
             font-weight: 400;
         }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 

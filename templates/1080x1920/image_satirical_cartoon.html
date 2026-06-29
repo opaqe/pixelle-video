@@ -139,6 +139,8 @@
         .logo-mark.active {
             background: rgba(149, 165, 166, 0.75);
         }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 

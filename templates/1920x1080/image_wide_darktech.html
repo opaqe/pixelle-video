@@ -263,6 +263,8 @@
         .bar-1 { width: 120px; }
         .bar-2 { width: 80px; }
         .bar-3 { width: 100px; }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 <body>

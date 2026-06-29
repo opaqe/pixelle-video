@@ -152,6 +152,8 @@
             letter-spacing: 2px;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
+            /* Keep Korean/CJK words intact, never break mid-word */
+        body { word-break: keep-all; overflow-wrap: break-word; }
     </style>
 </head>
 
