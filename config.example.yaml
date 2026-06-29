@@ -35,6 +35,10 @@ api_providers:
     api_key: ""
     base_url: "https://ark.cn-beijing.volces.com/api/v3"
     use_proxy: false
+  fal:
+    api_key: ""
+    base_url: "https://fal.run"
+    use_proxy: false
   kling:
     base_url: "https://api-beijing.klingai.com"
     access_key: ""
@@ -53,6 +57,10 @@ comfyui:
   # TTS-specific configuration
   tts:
     default_workflow: selfhost/tts_edge.json  # TTS workflow to use
+    # VoiceBox (voice dubbing) inference server
+    voicebox:
+      endpoint: "http://192.168.0.102:17493"  # VoiceBox server base URL
+      voice: ""  # Default VoiceBox profile id (optional)
   
   # Image-specific configuration
   image:

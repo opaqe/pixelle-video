@@ -290,6 +290,44 @@ def render_advanced_settings():
                     # Convert display value back to actual value
                     runninghub_48g_enabled = runninghub_instance_type_display == tr("settings.comfyui.runninghub_instance_48g")
 
+                st.markdown("---")
+
+                # VoiceBox (voice dubbing) configuration
+                st.markdown("**🎙️ VoiceBox**")
+                voicebox_config = config_manager.get_voicebox_config()
+                voicebox_endpoint = st.text_input(
+                    "VoiceBox Endpoint",
+                    value=voicebox_config.get("endpoint", "http://192.168.0.102:17493"),
+                    placeholder="http://192.168.0.102:17493",
+                    help=(
+                        "음성 더빙(VoiceBox) 추론 서버 주소입니다. 예: http://192.168.0.102:17493"
+                        if get_language() == "ko_KR"
+                        else (
+                            "VoiceBox 语音推理服务地址。" if get_language() == "zh_CN"
+                            else "VoiceBox voice inference server base URL."
+                        )
+                    ),
+                    key="voicebox_endpoint_input",
+                )
+                if st.button(tr("btn.test_connection"), key="test_voicebox", use_container_width=True):
+                    try:
+                        import requests
+                        resp = requests.get(f"{voicebox_endpoint.rstrip('/')}/health", timeout=5)
+                        if resp.status_code == 200:
+                            health = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+                            if health.get("model_loaded", True):
+                                st.success(tr("status.connection_success"))
+                            else:
+                                st.warning(
+                                    "연결됨 — 단, TTS 모델이 로드되지 않았습니다(model_loaded=false). VoiceBox에서 모델을 로드하세요."
+                                    if get_language() == "ko_KR"
+                                    else "Connected, but no TTS model is loaded (model_loaded=false). Load a model in VoiceBox."
+                                )
+                        else:
+                            st.error(tr("status.connection_failed"))
+                    except Exception as e:
+                        st.error(f"{tr('status.connection_failed')}: {str(e)}")
+
         # ====================================================================
         # Direct API media providers
         # ====================================================================
@@ -299,11 +337,13 @@ def render_advanced_settings():
         openai_cfg = api_cfg.get("openai", {})
         dashscope_cfg = api_cfg.get("dashscope", {})
         ark_cfg = api_cfg.get("ark", {})
+        fal_cfg = api_cfg.get("fal", {})
         kling_cfg = api_cfg.get("kling", {})
         default_api_base_urls = {
             "openai": "https://api.openai.com/v1",
             "dashscope": "https://dashscope.aliyuncs.com/api/v1",
             "ark": "https://ark.cn-beijing.volces.com/api/v3",
+            "fal": "https://fal.run",
             "kling": "https://api-beijing.klingai.com",
         }
 
@@ -380,6 +420,25 @@ def render_advanced_settings():
                     value=dashscope_cfg.get("base_url") or default_api_base_urls["dashscope"],
                     placeholder="https://dashscope.aliyuncs.com/api/v1",
                     key="api_media_dashscope_base_url",
+                )
+
+                st.markdown("**fal.ai**")
+                api_fal_use_proxy = st.checkbox(
+                    "fal.ai 启用代理" if zh else "Use proxy for fal.ai",
+                    value=bool(fal_cfg.get("use_proxy", False)),
+                    key="api_media_fal_use_proxy",
+                )
+                api_fal_key = st.text_input(
+                    "fal.ai API Key",
+                    value=fal_cfg.get("api_key", ""),
+                    type="password",
+                    key="api_media_fal_key",
+                )
+                api_fal_base_url = st.text_input(
+                    "fal.ai Base URL",
+                    value=fal_cfg.get("base_url") or default_api_base_urls["fal"],
+                    placeholder="https://fal.run",
+                    key="api_media_fal_base_url",
                 )
 
             with provider_col2:
@@ -476,6 +535,11 @@ def render_advanced_settings():
                         runninghub_instance_type=instance_type
                     )
 
+                    # Save VoiceBox (voice dubbing) configuration
+                    config_manager.set_voicebox_config(
+                        endpoint=(voicebox_endpoint.strip() if voicebox_endpoint else "") or "http://192.168.0.102:17493"
+                    )
+
                     # Save direct image/video API provider configuration.
                     config_manager.set_api_provider_config("common", {
                         "print_model_input": bool(api_print_model_input),
@@ -495,6 +559,11 @@ def render_advanced_settings():
                         "api_key": api_ark_key or "",
                         "base_url": api_ark_base_url or "",
                         "use_proxy": bool(api_ark_use_proxy),
+                    })
+                    config_manager.set_api_provider_config("fal", {
+                        "api_key": api_fal_key or "",
+                        "base_url": api_fal_base_url or "",
+                        "use_proxy": bool(api_fal_use_proxy),
                     })
                     config_manager.set_api_provider_config("kling", {
                         "base_url": api_kling_base_url or "",

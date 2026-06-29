@@ -136,6 +136,10 @@ class ConfigManager:
             "runninghub_instance_type": self.config.comfyui.runninghub_instance_type,
             "tts": {
                 "default_workflow": self.config.comfyui.tts.default_workflow,
+                "inference_mode": self.config.comfyui.tts.inference_mode,
+                "local": self.config.comfyui.tts.local.model_dump(),
+                "comfyui": self.config.comfyui.tts.comfyui.model_dump(),
+                "voicebox": self.config.comfyui.tts.voicebox.model_dump(),
             },
             "image": {
                 "default_workflow": self.config.comfyui.image.default_workflow,
@@ -146,6 +150,26 @@ class ConfigManager:
                 "prompt_prefix": self.config.comfyui.video.prompt_prefix,
             }
         }
+
+    def get_voicebox_config(self) -> dict:
+        """Get VoiceBox TTS configuration as dict"""
+        vb = self.config.comfyui.tts.voicebox
+        return {"endpoint": vb.endpoint, "voice": vb.voice}
+
+    def get_voicebox_endpoint(self) -> str:
+        """Get the VoiceBox server base URL with any trailing slash removed"""
+        endpoint = self.config.comfyui.tts.voicebox.endpoint or "http://192.168.0.102:17493"
+        return endpoint.rstrip("/")
+
+    def set_voicebox_config(self, endpoint: Optional[str] = None, voice: Optional[str] = None):
+        """Set VoiceBox TTS configuration"""
+        updates = {}
+        if endpoint is not None:
+            updates["endpoint"] = endpoint
+        if voice is not None:
+            updates["voice"] = voice
+        if updates:
+            self.update({"comfyui": {"tts": {"voicebox": updates}}})
 
     def get_api_providers_config(self) -> dict:
         """Get direct API provider configuration as dict"""

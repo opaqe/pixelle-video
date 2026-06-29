@@ -55,6 +55,7 @@ class APIProvidersConfig(BaseModel):
     deepseek: APIKeyProviderConfig = Field(default_factory=APIKeyProviderConfig)
     gemini: APIKeyProviderConfig = Field(default_factory=APIKeyProviderConfig)
     ark: APIKeyProviderConfig = Field(default_factory=APIKeyProviderConfig)
+    fal: APIKeyProviderConfig = Field(default_factory=APIKeyProviderConfig)
     kling: AccessSecretProviderConfig = Field(default_factory=AccessSecretProviderConfig)
 
 
@@ -69,11 +70,18 @@ class TTSComfyUIConfig(BaseModel):
     default_workflow: Optional[str] = Field(default=None, description="Default TTS workflow (optional)")
 
 
+class TTSVoiceBoxConfig(BaseModel):
+    """VoiceBox (voice dubbing) TTS server configuration"""
+    endpoint: str = Field(default="http://192.168.0.102:17493", description="VoiceBox inference server base URL")
+    voice: str = Field(default="", description="Default VoiceBox profile id")
+
+
 class TTSSubConfig(BaseModel):
     """TTS-specific configuration (under comfyui.tts)"""
-    inference_mode: str = Field(default="local", description="TTS inference mode: 'local' or 'comfyui'")
+    inference_mode: str = Field(default="local", description="TTS inference mode: 'local', 'voicebox' or 'comfyui'")
     local: TTSLocalConfig = Field(default_factory=TTSLocalConfig, description="Local TTS (Edge TTS) configuration")
     comfyui: TTSComfyUIConfig = Field(default_factory=TTSComfyUIConfig, description="ComfyUI TTS configuration")
+    voicebox: TTSVoiceBoxConfig = Field(default_factory=TTSVoiceBoxConfig, description="VoiceBox TTS configuration")
     
     # Backward compatibility: keep default_workflow at top level
     @property

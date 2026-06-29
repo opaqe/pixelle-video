@@ -9,11 +9,13 @@ try:
     from .image_dashscope import DashScopeClient
     from .image_seedream import SeedreamClient
     from .image_gpt import ImageGPT
+    from .image_fal import FalImageClient
     from .image_processor import ImageProcessor
 except ImportError:
     from .image_dashscope import DashScopeClient
     from .image_seedream import SeedreamClient
     from .image_gpt import ImageGPT
+    from .image_fal import FalImageClient
     from .image_processor import ImageProcessor
 
 class ImageClient:
@@ -26,10 +28,13 @@ class ImageClient:
                  local_proxy: Optional[str] = None,
                  ark_api_key: Optional[str] = None,
                  ark_base_url: Optional[str] = None,
-                 ark_local_proxy: Optional[str] = None):
+                 ark_local_proxy: Optional[str] = None,
+                 fal_api_key: Optional[str] = None,
+                 fal_base_url: Optional[str] = None,
+                 fal_local_proxy: Optional[str] = None):
         """
         Unified Image Generation Client
-        Routes requests to DashScope, Seedream, or GPT based on model name.
+        Routes requests to DashScope, Seedream, GPT, or fal.ai based on model name.
         """
         self._dashscope_api_key = dashscope_api_key or Config.DASHSCOPE_API_KEY
         self._dashscope_base_url = dashscope_base_url or Config.DASHSCOPE_BASE_URL
@@ -43,9 +48,14 @@ class ImageClient:
         self._ark_base_url = ark_base_url or Config.ARK_BASE_URL
         self._ark_local_proxy = ark_local_proxy
 
+        self._fal_api_key = fal_api_key or Config.FAL_API_KEY
+        self._fal_base_url = fal_base_url or Config.FAL_BASE_URL
+        self._fal_local_proxy = fal_local_proxy
+
         self._dashscope_client = None
         self._seedream_client = None
         self._gpt_client = None
+        self._fal_client = None
 
         # Initialize Image Processor for downloads
         self.image_processor = ImageProcessor()
@@ -89,6 +99,19 @@ class ImageClient:
                 local_proxy=self._gpt_local_proxy,
             )
         return self._gpt_client
+
+    @property
+    def fal_client(self):
+        """Create fal.ai client only when a fal/z-image model is selected."""
+        if not self._fal_api_key:
+            raise RuntimeError("fal.ai API key not set. Configure fal.ai only when using fal models.")
+        if self._fal_client is None:
+            self._fal_client = FalImageClient(
+                api_key=self._fal_api_key,
+                base_url=self._fal_base_url,
+                local_proxy=self._fal_local_proxy,
+            )
+        return self._fal_client
 
     def generate_image(self,
                        prompt: str,
@@ -174,6 +197,7 @@ class ImageClient:
         # Determine backend provider
         is_seedream = "seedream" in model.lower()
         is_sora = "sora" in model.lower() or "gpt" in model.lower()
+        is_fal = model.lower().startswith("fal") or "z-image" in model.lower()
         
         # Prepare save directory
         if not save_dir:
@@ -229,6 +253,28 @@ class ImageClient:
 
             except Exception as e:
                 logging.error(f"GPT/Sora generation failed: {e}")
+
+        elif is_fal:
+            # --- fal.ai Logic (e.g. Z-Image Turbo) ---
+            try:
+                logging.info(f"ImageClient requesting fal.ai: {model}")
+                if image_paths:
+                    logging.warning("fal.ai z-image model is Text-to-Image only. Ignoring reference images.")
+
+                paths = self.fal_client.generate_image(
+                    prompt=prompt,
+                    model=model,
+                    size=size,
+                    session_id=session_id,
+                    save_dir=save_dir,
+                )
+
+                if paths:
+                    generated_local_paths.extend(paths)
+
+            except Exception as e:
+                logging.error(f"fal.ai generation failed: {e}")
+                raise RuntimeError(f"fal.ai generation failed: {e}") from e
 
         else:
             # --- DashScope Logic ---

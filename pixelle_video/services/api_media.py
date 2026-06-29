@@ -34,6 +34,9 @@ class APIProviderMediaService:
             "doubao-seedream-4-5-251128",
             "doubao-seedream-4-0-250828",
         ],
+        "fal": [
+            "z-image-turbo",
+        ],
     }
 
     VIDEO_MODELS = {
@@ -680,6 +683,9 @@ class APIProviderMediaService:
             ark_api_key=cfg["ark"].get("api_key") or None,
             ark_base_url=cfg["ark"].get("base_url") or None,
             ark_local_proxy=local_proxy if cfg["ark"].get("use_proxy") else None,
+            fal_api_key=cfg.get("fal", {}).get("api_key") or None,
+            fal_base_url=cfg.get("fal", {}).get("base_url") or None,
+            fal_local_proxy=local_proxy if cfg.get("fal", {}).get("use_proxy") else None,
         )
 
     def _create_video_client(self):

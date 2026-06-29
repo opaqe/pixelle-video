@@ -207,11 +207,15 @@ class TTSService(ComfyBaseService):
         output_path: Optional[str] = None,
     ) -> str:
         """
-        Generate speech using VoiceBox local API (http://192.168.0.102:17493)
+        Generate speech using the VoiceBox local API (endpoint configured in Settings).
         """
         import httpx
-        
-        logger.info(f"🎙️  Using VoiceBox TTS: profile_id={voice}")
+        from pixelle_video.config import config_manager
+
+        endpoint = config_manager.get_voicebox_endpoint()
+        generate_url = f"{endpoint}/generate/stream"
+
+        logger.info(f"🎙️  Using VoiceBox TTS: profile_id={voice} (endpoint={endpoint})")
         
         # Generate output path if not provided
         if not output_path:
@@ -219,6 +223,14 @@ class TTSService(ComfyBaseService):
             output_path = f"output/{unique_id}.wav"
             Path("output").mkdir(parents=True, exist_ok=True)
             
+        # Fail fast with a clear message instead of letting the server 500 on an empty profile.
+        # (When /profiles returns nothing, the UI leaves selected_voice = "".)
+        if not voice:
+            raise ValueError(
+                "VoiceBox profile_id is empty — select a VoiceBox profile before generating "
+                "(no profiles were loaded from /profiles)."
+            )
+
         payload = {
             "profile_id": voice,
             "text": text
@@ -227,7 +239,7 @@ class TTSService(ComfyBaseService):
         try:
             # Voice generation might take a few seconds
             async with httpx.AsyncClient(timeout=None) as client:
-                response = await client.post("http://192.168.0.102:17493/generate/stream", json=payload)
+                response = await client.post(generate_url, json=payload)
                 response.raise_for_status()
                 
                 with open(output_path, 'wb') as f:
@@ -236,6 +248,27 @@ class TTSService(ComfyBaseService):
             logger.info(f"✅ Generated audio (VoiceBox TTS): {output_path}")
             return output_path
         
+        except httpx.HTTPStatusError as e:
+            # raise_for_status() only carries the status line — the server's 500 body holds
+            # the real reason (bad profile_id, model not loaded, OOM, ...). Surface it.
+            server_detail = ""
+            if e.response is not None:
+                try:
+                    server_detail = e.response.text[:1000]
+                except Exception:
+                    server_detail = ""
+            logger.error(
+                f"VoiceBox TTS generation error: {e} | profile_id={voice!r} | "
+                f"server detail: {server_detail}"
+            )
+            raise RuntimeError(
+                f"VoiceBox server error {e.response.status_code}: {server_detail or e}"
+            ) from e
+        except httpx.RequestError as e:
+            logger.error(f"VoiceBox TTS connection error: {e}")
+            raise RuntimeError(
+                f"Could not reach VoiceBox server at {endpoint}: {e}"
+            ) from e
         except Exception as e:
             logger.error(f"VoiceBox TTS generation error: {e}")
             raise

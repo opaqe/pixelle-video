@@ -57,7 +57,7 @@ def render_style_config(pixelle_video):
         if tts_mode == "local":
             st.caption(tr("tts.mode.local_hint"))
         elif tts_mode == "voicebox":
-            st.caption("VoiceBox Inference Endpoint: http://192.168.0.102:17493")
+            st.caption(f"VoiceBox Inference Endpoint: {config_manager.get_voicebox_endpoint()}")
         else:
             st.caption(tr("tts.mode.comfyui_hint"))
         
@@ -125,7 +125,7 @@ def render_style_config(pixelle_video):
         # VoiceBox Mode UI
         # ================================================================
         elif tts_mode == "voicebox":
-            vb_profiles = get_voicebox_profiles()
+            vb_profiles = get_voicebox_profiles(config_manager.get_voicebox_endpoint())
             vb_config = tts_config.get("voicebox", {})
             saved_vb_voice = vb_config.get("voice", "")
             
@@ -191,7 +191,7 @@ def render_style_config(pixelle_video):
             # Preview text input
             preview_text = st.text_input(
                 tr("tts.preview_text"),
-                value="大家好，这是一段测试语音。",
+                value="안녕하세요. 첫번째 테스트 입니다.",
                 placeholder=tr("tts.preview_text_placeholder"),
                 key="digital_tts_preview_text"
             )
