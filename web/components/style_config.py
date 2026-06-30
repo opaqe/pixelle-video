@@ -73,23 +73,28 @@ def render_style_config(pixelle_video):
         tts_config = comfyui_config["tts"]
         
         # Inference mode selection
-        _tts_modes = ["local", "voicebox", "comfyui"]
+        _tts_modes = ["local", "voicebox", "fal", "elevenlabs", "comfyui"]
+        _tts_mode_labels = {"voicebox": "VoiceBox", "fal": "fal.ai", "elevenlabs": "ElevenLabs"}
         _cfg_mode = tts_config.get("inference_mode", "voicebox")
         _default_mode_index = _tts_modes.index(_cfg_mode) if _cfg_mode in _tts_modes else 1
         tts_mode = st.radio(
             tr("tts.inference_mode"),
             _tts_modes,
             horizontal=True,
-            format_func=lambda x: tr(f"tts.mode.{x}") if x != "voicebox" else "VoiceBox",
+            format_func=lambda x: _tts_mode_labels.get(x, tr(f"tts.mode.{x}")),
             index=reuse_index("tts_inference_mode", _tts_modes, _rp.get("tts_inference_mode"), _default_mode_index),
             key="tts_inference_mode"
         )
-        
+
         # Show hint based on mode
         if tts_mode == "local":
             st.caption(tr("tts.mode.local_hint"))
         elif tts_mode == "voicebox":
             st.caption(f"VoiceBox Inference Endpoint: {config_manager.get_voicebox_endpoint()}")
+        elif tts_mode == "fal":
+            st.caption(f"fal.ai TTS Model: {tts_config.get('fal', {}).get('model', 'fal-ai/minimax-tts')}")
+        elif tts_mode == "elevenlabs":
+            st.caption(f"ElevenLabs Model: {tts_config.get('elevenlabs', {}).get('model', 'eleven_multilingual_v2')}")
         else:
             st.caption(tr("tts.mode.comfyui_hint"))
         
@@ -181,10 +186,66 @@ def render_style_config(pixelle_video):
                     key="tts_voicebox_profile"
                 )
                 selected_voice = vb_ids[vb_options.index(selected_voice_display)]
-                
+
             tts_workflow_key = None
             ref_audio_path = None
-        
+
+        # ================================================================
+        # fal.ai Mode UI
+        # ================================================================
+        elif tts_mode == "fal":
+            fal_config = tts_config.get("fal", {})
+            saved_fal_voice = fal_config.get("voice", "")
+
+            selected_voice = st.text_input(
+                "fal.ai Voice",
+                value=reuse_scalar("tts_fal_voice", _rp.get("tts_voice"), saved_fal_voice),
+                placeholder=(
+                    "모델별 음성 ID (선택)" if get_language() == "ko_KR"
+                    else ("模型对应的音色 ID（可选）" if get_language() == "zh_CN"
+                          else "Model-specific voice id (optional)")
+                ),
+                help=(
+                    "비워두면 모델 기본 음성을 사용합니다. 모델/엔드포인트는 설정에서 변경하세요."
+                    if get_language() == "ko_KR"
+                    else (
+                        "留空则使用模型默认音色。模型/端点请在设置中修改。"
+                        if get_language() == "zh_CN"
+                        else "Leave blank to use the model default voice. Change the model/endpoint in Settings."
+                    )
+                ),
+                key="tts_fal_voice"
+            )
+
+            tts_workflow_key = None
+            ref_audio_path = None
+
+        # ================================================================
+        # ElevenLabs Mode UI
+        # ================================================================
+        elif tts_mode == "elevenlabs":
+            el_config = tts_config.get("elevenlabs", {})
+            saved_el_voice = el_config.get("voice", "21m00Tcm4TlvDq8ikWAM")
+
+            selected_voice = st.text_input(
+                "ElevenLabs Voice ID",
+                value=reuse_scalar("tts_elevenlabs_voice", _rp.get("tts_voice"), saved_el_voice),
+                placeholder="21m00Tcm4TlvDq8ikWAM",
+                help=(
+                    "비워두면 설정의 기본 음성을 사용합니다. 모델/API 키는 설정에서 변경하세요."
+                    if get_language() == "ko_KR"
+                    else (
+                        "留空则使用设置中的默认音色。模型/API Key 请在设置中修改。"
+                        if get_language() == "zh_CN"
+                        else "Leave blank to use the default voice from Settings. Change the model/API key in Settings."
+                    )
+                ),
+                key="tts_elevenlabs_voice"
+            )
+
+            tts_workflow_key = None
+            ref_audio_path = None
+
         # ================================================================
         # ComfyUI Mode UI
         # ================================================================
@@ -270,7 +331,7 @@ def render_style_config(pixelle_video):
                         if tts_mode == "local":
                             tts_params["voice"] = selected_voice
                             tts_params["speed"] = tts_speed
-                        elif tts_mode == "voicebox":
+                        elif tts_mode in ("voicebox", "fal", "elevenlabs"):
                             tts_params["voice"] = selected_voice
                         else:  # comfyui
                             tts_params["workflow"] = tts_workflow_key
@@ -998,7 +1059,7 @@ def render_style_config(pixelle_video):
 
     return {
         "tts_inference_mode": tts_mode,
-        "tts_voice": selected_voice if tts_mode in ["local", "voicebox"] else None,
+        "tts_voice": selected_voice if tts_mode in ["local", "voicebox", "fal", "elevenlabs"] else None,
         "tts_speed": tts_speed if tts_mode == "local" else None,
         "tts_workflow": tts_workflow_key if tts_mode == "comfyui" else None,
         "ref_audio": str(ref_audio_path) if ref_audio_path else None,

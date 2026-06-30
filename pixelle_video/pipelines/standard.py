@@ -251,6 +251,12 @@ class StandardPipeline(LinearVideoPipeline):
                 final_voice_id = tts_voice or "zh-CN-YunjianNeural"
                 final_tts_workflow = None
                 logger.debug(f"TTS Mode: {tts_inference_mode} (voice={final_voice_id})")
+            elif tts_inference_mode in ("fal", "elevenlabs"):
+                # Cloud TTS with model-specific voice ids; a blank voice falls back to
+                # the configured provider voice (do NOT use the Edge default).
+                final_voice_id = tts_voice or None
+                final_tts_workflow = None
+                logger.debug(f"TTS Mode: {tts_inference_mode} (voice={final_voice_id})")
             elif tts_inference_mode == "comfyui":
                 final_voice_id = None
                 logger.debug(f"TTS Mode: comfyui (workflow={final_tts_workflow})")

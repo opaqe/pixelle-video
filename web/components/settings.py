@@ -290,43 +290,194 @@ def render_advanced_settings():
                     # Convert display value back to actual value
                     runninghub_48g_enabled = runninghub_instance_type_display == tr("settings.comfyui.runninghub_instance_48g")
 
-                st.markdown("---")
+        # ====================================================================
+        # Voice Model Settings (VoiceBox)
+        # ====================================================================
+        with st.container(border=True):
+            st.markdown(
+                "**🎙️ 음성 모델 설정 (VoiceBox)**" if get_language() == "ko_KR"
+                else ("**🎙️ 语音模型设置 (VoiceBox)**" if get_language() == "zh_CN"
+                      else "**🎙️ Voice Model Settings (VoiceBox)**")
+            )
+            voicebox_config = config_manager.get_voicebox_config()
+            voicebox_endpoint = st.text_input(
+                "VoiceBox Endpoint",
+                value=voicebox_config.get("endpoint", "http://192.168.0.102:17493"),
+                placeholder="http://192.168.0.102:17493",
+                help=(
+                    "음성 더빙(VoiceBox) 추론 서버 주소입니다. 예: http://192.168.0.102:17493"
+                    if get_language() == "ko_KR"
+                    else (
+                        "VoiceBox 语音推理服务地址。" if get_language() == "zh_CN"
+                        else "VoiceBox voice inference server base URL."
+                    )
+                ),
+                key="voicebox_endpoint_input",
+            )
+            if st.button(tr("btn.test_connection"), key="test_voicebox", use_container_width=True):
+                try:
+                    import requests
+                    resp = requests.get(f"{voicebox_endpoint.rstrip('/')}/health", timeout=5)
+                    if resp.status_code == 200:
+                        health = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+                        if health.get("model_loaded", True):
+                            st.success(tr("status.connection_success"))
+                        else:
+                            st.warning(
+                                "연결됨 — 단, TTS 모델이 로드되지 않았습니다(model_loaded=false). VoiceBox에서 모델을 로드하세요."
+                                if get_language() == "ko_KR"
+                                else "Connected, but no TTS model is loaded (model_loaded=false). Load a model in VoiceBox."
+                            )
+                    else:
+                        st.error(tr("status.connection_failed"))
+                except Exception as e:
+                    st.error(f"{tr('status.connection_failed')}: {str(e)}")
 
-                # VoiceBox (voice dubbing) configuration
-                st.markdown("**🎙️ VoiceBox**")
-                voicebox_config = config_manager.get_voicebox_config()
-                voicebox_endpoint = st.text_input(
-                    "VoiceBox Endpoint",
-                    value=voicebox_config.get("endpoint", "http://192.168.0.102:17493"),
-                    placeholder="http://192.168.0.102:17493",
+            # ----------------------------------------------------------------
+            # fal.ai TTS (cloud) configuration
+            # The API key can be set independently here for voice/TTS; when left
+            # empty it falls back to the shared fal.ai key in "API Media Models".
+            # ----------------------------------------------------------------
+            st.markdown("---")
+            st.markdown("**fal.ai TTS (Cloud)**")
+            fal_tts_config = config_manager.get_fal_tts_config()
+            fal_tts_api_key = st.text_input(
+                "fal.ai TTS API Key",
+                value=fal_tts_config.get("api_key", ""),
+                type="password",
+                placeholder=(
+                    "비워두면 ‘API Media Models’의 fal.ai 키 사용" if get_language() == "ko_KR"
+                    else ("留空则使用 “API Media Models” 的 fal.ai Key" if get_language() == "zh_CN"
+                          else "Leave blank to use the fal.ai key from “API Media Models”")
+                ),
+                help=(
+                    "음성(TTS) 전용 fal.ai API Key입니다. 비워두면 아래 ‘API Media Models’의 fal.ai 키로 대체됩니다."
+                    if get_language() == "ko_KR"
+                    else (
+                        "语音(TTS)专用的 fal.ai API Key。留空则使用下方 “API Media Models” 的 fal.ai Key。"
+                        if get_language() == "zh_CN"
+                        else "fal.ai API key dedicated to voice (TTS). Leave blank to fall back to the fal.ai key in “API Media Models” below."
+                    )
+                ),
+                key="fal_tts_api_key_input",
+            )
+            fal_model_col, fal_voice_col = st.columns(2)
+            with fal_model_col:
+                fal_tts_model = st.text_input(
+                    "fal.ai TTS Model",
+                    value=fal_tts_config.get("model", "fal-ai/minimax-tts"),
+                    placeholder="fal-ai/minimax-tts",
                     help=(
-                        "음성 더빙(VoiceBox) 추론 서버 주소입니다. 예: http://192.168.0.102:17493"
+                        "fal.ai TTS 모델/엔드포인트 ID입니다. 예: fal-ai/minimax-tts"
                         if get_language() == "ko_KR"
                         else (
-                            "VoiceBox 语音推理服务地址。" if get_language() == "zh_CN"
-                            else "VoiceBox voice inference server base URL."
+                            "fal.ai TTS 模型/端点 ID。例如：fal-ai/minimax-tts"
+                            if get_language() == "zh_CN"
+                            else "fal.ai TTS model/endpoint id. e.g. fal-ai/minimax-tts"
                         )
                     ),
-                    key="voicebox_endpoint_input",
+                    key="fal_tts_model_input",
                 )
-                if st.button(tr("btn.test_connection"), key="test_voicebox", use_container_width=True):
-                    try:
-                        import requests
-                        resp = requests.get(f"{voicebox_endpoint.rstrip('/')}/health", timeout=5)
-                        if resp.status_code == 200:
-                            health = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
-                            if health.get("model_loaded", True):
-                                st.success(tr("status.connection_success"))
-                            else:
-                                st.warning(
-                                    "연결됨 — 단, TTS 모델이 로드되지 않았습니다(model_loaded=false). VoiceBox에서 모델을 로드하세요."
-                                    if get_language() == "ko_KR"
-                                    else "Connected, but no TTS model is loaded (model_loaded=false). Load a model in VoiceBox."
-                                )
-                        else:
-                            st.error(tr("status.connection_failed"))
-                    except Exception as e:
-                        st.error(f"{tr('status.connection_failed')}: {str(e)}")
+            with fal_voice_col:
+                fal_tts_voice = st.text_input(
+                    "fal.ai Voice",
+                    value=fal_tts_config.get("voice", ""),
+                    placeholder=(
+                        "모델별 음성 ID (선택)" if get_language() == "ko_KR"
+                        else ("模型对应的音色 ID（可选）" if get_language() == "zh_CN"
+                              else "Model-specific voice id (optional)")
+                    ),
+                    help=(
+                        "기본 음성 ID입니다. 모델마다 사용 가능한 음성이 다릅니다. 비워두면 모델 기본값을 사용합니다."
+                        if get_language() == "ko_KR"
+                        else (
+                            "默认音色 ID，因模型而异。留空则使用模型默认音色。"
+                            if get_language() == "zh_CN"
+                            else "Default voice id (model-specific). Leave blank to use the model default."
+                        )
+                    ),
+                    key="fal_tts_voice_input",
+                )
+            st.caption(
+                "🔑 위 API Key를 비워두면 아래 ‘API Media Models’의 fal.ai 키를 사용합니다."
+                if get_language() == "ko_KR"
+                else (
+                    "🔑 上方 API Key 留空时，将使用下方 “API Media Models” 中的 fal.ai Key。"
+                    if get_language() == "zh_CN"
+                    else "🔑 If the API Key above is blank, the fal.ai key from “API Media Models” below is used."
+                )
+            )
+
+            # ----------------------------------------------------------------
+            # ElevenLabs TTS (cloud, native API) configuration
+            # ----------------------------------------------------------------
+            st.markdown("---")
+            st.markdown("**ElevenLabs TTS (Cloud)**")
+            el_tts_config = config_manager.get_elevenlabs_tts_config()
+            el_tts_api_key = st.text_input(
+                "ElevenLabs API Key",
+                value=el_tts_config.get("api_key", ""),
+                type="password",
+                placeholder="xi-...",
+                help=(
+                    "ElevenLabs API Key입니다. elevenlabs.io 계정의 프로필에서 발급받을 수 있습니다."
+                    if get_language() == "ko_KR"
+                    else (
+                        "ElevenLabs API Key。可在 elevenlabs.io 账户的个人资料中获取。"
+                        if get_language() == "zh_CN"
+                        else "ElevenLabs API key (from your elevenlabs.io account profile)."
+                    )
+                ),
+                key="el_tts_api_key_input",
+            )
+            el_model_col, el_voice_col = st.columns(2)
+            with el_model_col:
+                el_tts_model = st.text_input(
+                    "ElevenLabs Model",
+                    value=el_tts_config.get("model", "eleven_multilingual_v2"),
+                    placeholder="eleven_multilingual_v2",
+                    help=(
+                        "ElevenLabs 모델 ID입니다. 예: eleven_multilingual_v2, eleven_turbo_v2_5"
+                        if get_language() == "ko_KR"
+                        else (
+                            "ElevenLabs 模型 ID。例如：eleven_multilingual_v2、eleven_turbo_v2_5"
+                            if get_language() == "zh_CN"
+                            else "ElevenLabs model id. e.g. eleven_multilingual_v2, eleven_turbo_v2_5"
+                        )
+                    ),
+                    key="el_tts_model_input",
+                )
+            with el_voice_col:
+                el_tts_voice = st.text_input(
+                    "ElevenLabs Voice ID",
+                    value=el_tts_config.get("voice", "21m00Tcm4TlvDq8ikWAM"),
+                    placeholder="21m00Tcm4TlvDq8ikWAM",
+                    help=(
+                        "ElevenLabs 음성(Voice) ID입니다. ElevenLabs Voice Library에서 확인할 수 있습니다."
+                        if get_language() == "ko_KR"
+                        else (
+                            "ElevenLabs 音色(Voice) ID。可在 ElevenLabs Voice Library 中查看。"
+                            if get_language() == "zh_CN"
+                            else "ElevenLabs voice id (find it in your ElevenLabs Voice Library)."
+                        )
+                    ),
+                    key="el_tts_voice_input",
+                )
+            el_tts_base_url = st.text_input(
+                "ElevenLabs Base URL",
+                value=el_tts_config.get("base_url", "https://api.elevenlabs.io"),
+                placeholder="https://api.elevenlabs.io",
+                help=(
+                    "ElevenLabs API 주소입니다. 보통 기본값을 그대로 사용합니다."
+                    if get_language() == "ko_KR"
+                    else (
+                        "ElevenLabs API 地址，通常保持默认即可。"
+                        if get_language() == "zh_CN"
+                        else "ElevenLabs API base URL. Usually keep the default."
+                    )
+                ),
+                key="el_tts_base_url_input",
+            )
 
         # ====================================================================
         # Direct API media providers
@@ -538,6 +689,23 @@ def render_advanced_settings():
                     # Save VoiceBox (voice dubbing) configuration
                     config_manager.set_voicebox_config(
                         endpoint=(voicebox_endpoint.strip() if voicebox_endpoint else "") or "http://192.168.0.102:17493"
+                    )
+
+                    # Save fal.ai TTS configuration. The API key is optional here;
+                    # when blank, generation falls back to the shared fal.ai key
+                    # saved under the API media providers below.
+                    config_manager.set_fal_tts_config(
+                        model=(fal_tts_model.strip() if fal_tts_model else "") or "fal-ai/minimax-tts",
+                        voice=(fal_tts_voice.strip() if fal_tts_voice else ""),
+                        api_key=(fal_tts_api_key.strip() if fal_tts_api_key else ""),
+                    )
+
+                    # Save ElevenLabs TTS configuration (native ElevenLabs API).
+                    config_manager.set_elevenlabs_tts_config(
+                        api_key=(el_tts_api_key.strip() if el_tts_api_key else ""),
+                        model=(el_tts_model.strip() if el_tts_model else "") or "eleven_multilingual_v2",
+                        voice=(el_tts_voice.strip() if el_tts_voice else "") or "21m00Tcm4TlvDq8ikWAM",
+                        base_url=(el_tts_base_url.strip() if el_tts_base_url else "") or "https://api.elevenlabs.io",
                     )
 
                     # Save direct image/video API provider configuration.

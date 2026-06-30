@@ -533,6 +533,8 @@ class DigitalHumanPipelineUI(PipelineUI):
                             if tts_inference_mode == "local":
                                 tts_kwargs["voice"] = tts_voice
                                 tts_kwargs["speed"] = tts_speed
+                            elif tts_inference_mode in ("voicebox", "fal", "elevenlabs"):
+                                tts_kwargs["voice"] = tts_voice
                             elif tts_inference_mode == "comfyui":
                                 if tts_workflow:
                                     tts_kwargs["workflow"] = tts_workflow
@@ -622,7 +624,7 @@ class DigitalHumanPipelineUI(PipelineUI):
                                 "output_path": audio_path,
                                 "inference_mode": tts_inference_mode
                             }
-                            if tts_inference_mode == "local" or tts_inference_mode == "voicebox":
+                            if tts_inference_mode in ("local", "voicebox", "fal", "elevenlabs"):
                                 tts_kwargs["voice"] = tts_voice
                                 if tts_inference_mode == "local":
                                     tts_kwargs["speed"] = tts_speed
@@ -740,7 +742,7 @@ class DigitalHumanPipelineUI(PipelineUI):
                                     "output_path": audio_path,
                                     "inference_mode": tts_inference_mode
                                 }
-                                if tts_inference_mode == "local" or tts_inference_mode == "voicebox":
+                                if tts_inference_mode in ("local", "voicebox", "fal", "elevenlabs"):
                                     tts_kwargs["voice"] = tts_voice
                                     if tts_inference_mode == "local":
                                         tts_kwargs["speed"] = tts_speed
@@ -852,7 +854,7 @@ class DigitalHumanPipelineUI(PipelineUI):
                                     "output_path": audio_path,
                                     "inference_mode": tts_inference_mode
                                 }
-                                if tts_inference_mode == "local" or tts_inference_mode == "voicebox":
+                                if tts_inference_mode in ("local", "voicebox", "fal", "elevenlabs"):
                                     tts_kwargs["voice"] = tts_voice
                                     if tts_inference_mode == "local":
                                         tts_kwargs["speed"] = tts_speed

@@ -140,6 +140,8 @@ class ConfigManager:
                 "local": self.config.comfyui.tts.local.model_dump(),
                 "comfyui": self.config.comfyui.tts.comfyui.model_dump(),
                 "voicebox": self.config.comfyui.tts.voicebox.model_dump(),
+                "fal": self.config.comfyui.tts.fal.model_dump(),
+                "elevenlabs": self.config.comfyui.tts.elevenlabs.model_dump(),
             },
             "image": {
                 "default_workflow": self.config.comfyui.image.default_workflow,
@@ -170,6 +172,62 @@ class ConfigManager:
             updates["voice"] = voice
         if updates:
             self.update({"comfyui": {"tts": {"voicebox": updates}}})
+
+    def get_fal_tts_config(self) -> dict:
+        """Get fal.ai TTS configuration as dict (model, default voice, api_key).
+
+        ``api_key`` may be empty; in that case callers should fall back to the
+        shared key under ``get_api_providers_config()['fal']``.
+        """
+        fal = self.config.comfyui.tts.fal
+        return {"model": fal.model, "voice": fal.voice, "api_key": fal.api_key}
+
+    def set_fal_tts_config(
+        self,
+        model: Optional[str] = None,
+        voice: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        """Set fal.ai TTS configuration"""
+        updates = {}
+        if model is not None:
+            updates["model"] = model
+        if voice is not None:
+            updates["voice"] = voice
+        if api_key is not None:
+            updates["api_key"] = api_key
+        if updates:
+            self.update({"comfyui": {"tts": {"fal": updates}}})
+
+    def get_elevenlabs_tts_config(self) -> dict:
+        """Get ElevenLabs TTS configuration as dict"""
+        el = self.config.comfyui.tts.elevenlabs
+        return {
+            "api_key": el.api_key,
+            "model": el.model,
+            "voice": el.voice,
+            "base_url": el.base_url,
+        }
+
+    def set_elevenlabs_tts_config(
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        voice: Optional[str] = None,
+        base_url: Optional[str] = None,
+    ):
+        """Set ElevenLabs TTS configuration"""
+        updates = {}
+        if api_key is not None:
+            updates["api_key"] = api_key
+        if model is not None:
+            updates["model"] = model
+        if voice is not None:
+            updates["voice"] = voice
+        if base_url is not None:
+            updates["base_url"] = base_url
+        if updates:
+            self.update({"comfyui": {"tts": {"elevenlabs": updates}}})
 
     def get_api_providers_config(self) -> dict:
         """Get direct API provider configuration as dict"""

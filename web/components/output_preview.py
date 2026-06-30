@@ -183,7 +183,7 @@ def render_single_output(pixelle_video, video_params):
                 }
                 # Add TTS parameters based on mode
                 video_params["tts_inference_mode"] = tts_mode
-                if tts_mode == "local" or tts_mode == "voicebox":
+                if tts_mode in ("local", "voicebox", "fal", "elevenlabs"):
                     video_params["tts_voice"] = selected_voice
                     if tts_mode == "local":
                         video_params["tts_speed"] = tts_speed
@@ -337,7 +337,7 @@ def render_batch_output(pixelle_video, video_params):
                 "media_height": video_params.get("media_height"),
             }
             # Add TTS parameters based on mode (only add non-None values)
-            if shared_config["tts_inference_mode"] in ["local", "voicebox"]:
+            if shared_config["tts_inference_mode"] in ["local", "voicebox", "fal", "elevenlabs"]:
                 tts_voice = video_params.get("tts_voice")
                 if tts_voice:
                     shared_config["tts_voice"] = tts_voice

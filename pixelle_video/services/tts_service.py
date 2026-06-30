@@ -128,6 +128,20 @@ class TTSService(ComfyBaseService):
                 voice=voice,
                 output_path=output_path
             )
+        elif mode == "fal":
+            return await self._call_fal_tts(
+                text=text,
+                voice=voice,
+                output_path=output_path,
+                **params
+            )
+        elif mode == "elevenlabs":
+            return await self._call_elevenlabs_tts(
+                text=text,
+                voice=voice,
+                output_path=output_path,
+                **params
+            )
         else:  # comfyui
             # 1. Resolve workflow (returns structured info)
             workflow_info = self._resolve_workflow(workflow=workflow)
@@ -273,6 +287,140 @@ class TTSService(ComfyBaseService):
             logger.error(f"VoiceBox TTS generation error: {e}")
             raise
     
+    async def _call_fal_tts(
+        self,
+        text: str,
+        voice: Optional[str] = None,
+        output_path: Optional[str] = None,
+        **params
+    ) -> str:
+        """
+        Generate speech using a fal.ai hosted TTS model.
+
+        Credentials (API key / base URL / proxy) are shared with the fal.ai image
+        provider under ``api_providers.fal``; the model and default voice come from
+        ``comfyui.tts.fal``. Extra pipeline kwargs (e.g. ``index``, ``speed``) are
+        intentionally ignored so they don't pollute the fal request payload.
+        """
+        import asyncio
+
+        from pixelle_video.config import config_manager
+        from pixelle_video.services.api_services.audio_fal import (
+            DEFAULT_FAL_TTS_MODEL,
+            FalTTSClient,
+        )
+
+        fal_tts_config = config_manager.get_fal_tts_config()
+        model = fal_tts_config.get("model") or DEFAULT_FAL_TTS_MODEL
+        final_voice = voice or fal_tts_config.get("voice") or None
+
+        # base_url / proxy come from the shared fal provider config.
+        api_cfg = config_manager.get_api_providers_config()
+        fal_cfg = api_cfg.get("fal", {})
+        common_cfg = api_cfg.get("common", {})
+        local_proxy = (common_cfg.get("local_proxy") or None) if fal_cfg.get("use_proxy") else None
+
+        # TTS-specific fal API key takes precedence; when blank, use the shared
+        # api_providers.fal key so single-key setups keep working.
+        api_key = (fal_tts_config.get("api_key") or "").strip() or (fal_cfg.get("api_key") or "").strip()
+        if not api_key:
+            raise RuntimeError(
+                "fal.ai API key not set. Configure it in Settings > Voice Model Settings "
+                "(fal.ai TTS) or API Media Models (fal.ai)."
+            )
+
+        logger.info(f"🎙️  Using fal.ai TTS: model={model}, voice={final_voice!r}")
+
+        if not output_path:
+            unique_id = uuid.uuid4().hex
+            output_path = f"output/{unique_id}.mp3"
+            Path("output").mkdir(parents=True, exist_ok=True)
+
+        client = FalTTSClient(
+            api_key=api_key,
+            base_url=fal_cfg.get("base_url") or None,
+            local_proxy=local_proxy,
+        )
+
+        try:
+            # The fal client is synchronous (requests); run it off the event loop.
+            # Note: extra pipeline kwargs in **params are deliberately not forwarded
+            # to keep the fal request payload to {text, voice}.
+            audio_path = await asyncio.to_thread(
+                client.generate_speech,
+                text=text,
+                model=model,
+                voice=final_voice,
+                output_path=output_path,
+            )
+            logger.info(f"✅ Generated audio (fal.ai TTS): {audio_path}")
+            return audio_path
+        except Exception as e:
+            logger.error(f"fal.ai TTS generation error: {e}")
+            raise
+
+    async def _call_elevenlabs_tts(
+        self,
+        text: str,
+        voice: Optional[str] = None,
+        output_path: Optional[str] = None,
+        **params
+    ) -> str:
+        """
+        Generate speech using the native ElevenLabs TTS API.
+
+        API key / model / voice / base URL come from ``comfyui.tts.elevenlabs``.
+        Extra pipeline kwargs (e.g. ``index``, ``speed``) are intentionally ignored
+        so they don't pollute the ElevenLabs request payload.
+        """
+        import asyncio
+
+        from pixelle_video.config import config_manager
+        from pixelle_video.services.api_services.audio_elevenlabs import (
+            DEFAULT_ELEVENLABS_MODEL,
+            ElevenLabsTTSClient,
+        )
+
+        el_config = config_manager.get_elevenlabs_tts_config()
+        api_key = (el_config.get("api_key") or "").strip()
+        model = el_config.get("model") or DEFAULT_ELEVENLABS_MODEL
+        final_voice = voice or el_config.get("voice") or None
+        base_url = el_config.get("base_url") or None
+
+        if not api_key:
+            raise RuntimeError(
+                "ElevenLabs API key not set. Configure it in Settings > Voice Model Settings (ElevenLabs)."
+            )
+
+        logger.info(f"🎙️  Using ElevenLabs TTS: model={model}, voice={final_voice!r}")
+
+        if not output_path:
+            unique_id = uuid.uuid4().hex
+            output_path = f"output/{unique_id}.mp3"
+            Path("output").mkdir(parents=True, exist_ok=True)
+
+        client = ElevenLabsTTSClient(
+            api_key=api_key,
+            base_url=base_url,
+            model=model,
+        )
+
+        try:
+            # The ElevenLabs client is synchronous (requests); run it off the event loop.
+            # Extra pipeline kwargs in **params are deliberately not forwarded.
+            audio_path = await asyncio.to_thread(
+                client.generate_speech,
+                text=text,
+                voice=final_voice,
+                model=model,
+                output_path=output_path,
+            )
+            logger.info(f"✅ Generated audio (ElevenLabs TTS): {audio_path}")
+            return audio_path
+        except Exception as e:
+            logger.error(f"ElevenLabs TTS generation error: {e}")
+            raise
+
     async def _call_comfyui_workflow(
         self,
         workflow_info: dict,

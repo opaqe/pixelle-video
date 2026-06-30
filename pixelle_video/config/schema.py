@@ -76,12 +76,34 @@ class TTSVoiceBoxConfig(BaseModel):
     voice: str = Field(default="", description="Default VoiceBox profile id")
 
 
+class TTSFalConfig(BaseModel):
+    """fal.ai TTS configuration
+
+    ``api_key`` can be set independently here for voice/TTS. When left empty it
+    falls back to the shared fal.ai key under ``api_providers.fal`` (used by the
+    image provider), so existing single-key setups keep working.
+    """
+    model: str = Field(default="fal-ai/minimax-tts", description="fal.ai TTS model/endpoint id (e.g. fal-ai/minimax-tts)")
+    voice: str = Field(default="", description="Default fal.ai voice id/name (model-specific, optional)")
+    api_key: str = Field(default="", description="fal.ai API key for TTS (falls back to api_providers.fal when empty)")
+
+
+class TTSElevenLabsConfig(BaseModel):
+    """ElevenLabs TTS configuration (native ElevenLabs API)"""
+    api_key: str = Field(default="", description="ElevenLabs API key")
+    model: str = Field(default="eleven_multilingual_v2", description="ElevenLabs model id (e.g. eleven_multilingual_v2)")
+    voice: str = Field(default="21m00Tcm4TlvDq8ikWAM", description="ElevenLabs voice id")
+    base_url: str = Field(default="https://api.elevenlabs.io", description="ElevenLabs API base URL")
+
+
 class TTSSubConfig(BaseModel):
     """TTS-specific configuration (under comfyui.tts)"""
-    inference_mode: str = Field(default="local", description="TTS inference mode: 'local', 'voicebox' or 'comfyui'")
+    inference_mode: str = Field(default="local", description="TTS inference mode: 'local', 'voicebox', 'fal', 'elevenlabs' or 'comfyui'")
     local: TTSLocalConfig = Field(default_factory=TTSLocalConfig, description="Local TTS (Edge TTS) configuration")
     comfyui: TTSComfyUIConfig = Field(default_factory=TTSComfyUIConfig, description="ComfyUI TTS configuration")
     voicebox: TTSVoiceBoxConfig = Field(default_factory=TTSVoiceBoxConfig, description="VoiceBox TTS configuration")
+    fal: TTSFalConfig = Field(default_factory=TTSFalConfig, description="fal.ai TTS configuration")
+    elevenlabs: TTSElevenLabsConfig = Field(default_factory=TTSElevenLabsConfig, description="ElevenLabs TTS configuration")
     
     # Backward compatibility: keep default_workflow at top level
     @property

@@ -61,6 +61,17 @@ comfyui:
     voicebox:
       endpoint: "http://192.168.0.102:17493"  # VoiceBox server base URL
       voice: ""  # Default VoiceBox profile id (optional)
+    # fal.ai cloud TTS.
+    fal:
+      model: "fal-ai/minimax-tts"  # fal.ai TTS model/endpoint id
+      voice: ""  # Default voice id/name (model-specific, optional)
+      api_key: ""  # TTS-specific fal.ai API key (falls back to api_providers.fal when empty)
+    # ElevenLabs cloud TTS (native ElevenLabs API).
+    elevenlabs:
+      api_key: ""  # ElevenLabs API key
+      model: "eleven_multilingual_v2"  # ElevenLabs model id
+      voice: "21m00Tcm4TlvDq8ikWAM"  # ElevenLabs voice id (default: premade "Rachel")
+      base_url: "https://api.elevenlabs.io"  # ElevenLabs API base URL
   
   # Image-specific configuration
   image:
