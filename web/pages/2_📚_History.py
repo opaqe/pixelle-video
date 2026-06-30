@@ -334,7 +334,7 @@ def render_task_detail_modal(task_id: str, pixelle_video):
                 for k in (
                     "mode", "split_mode", "n_scenes", "tts_inference_mode",
                     "tts_voice", "tts_speed", "media_workflow", "bgm_path", "bgm_volume",
-                    "prompt_prefix", "template_params", "api_video_params", "title_prefix",
+                    "template_params", "api_video_params", "title_prefix",
                 ):
                     v = input_params.get(k)
                     if v not in (None, "", {}):
@@ -348,7 +348,15 @@ def render_task_detail_modal(task_id: str, pixelle_video):
                     reuse.setdefault("media_workflow", getattr(cfg, "media_workflow", None))
                     reuse.setdefault("template_params", getattr(cfg, "template_params", None))
                     reuse.setdefault("api_video_params", getattr(cfg, "api_video_params", None))
-                set_reuse_params({k: v for k, v in reuse.items() if v not in (None, "", {})})
+                filtered = {k: v for k, v in reuse.items() if v not in (None, "", {})}
+                # prompt_prefix: an empty string is a deliberate choice ("no prefix"),
+                # so carry it verbatim whenever it was recorded. Without this, reusing a
+                # task that ran with no prefix would silently fall back to the config
+                # default prefix on the new task.
+                recorded_prefix = input_params.get("prompt_prefix")
+                if isinstance(recorded_prefix, str):
+                    filtered["prompt_prefix"] = recorded_prefix
+                set_reuse_params(filtered)
 
                 st.session_state[f"detail_{task_id}"] = False
                 st.switch_page("pages/1_🎬_Home.py")
