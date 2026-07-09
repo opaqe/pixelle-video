@@ -35,12 +35,43 @@ def _resolve_language(language: Optional[str]) -> Optional[str]:
         return None
 
 
+def _record_llm_call(
+    llm_log: Optional[List[dict]],
+    step: str,
+    prompt: str,
+    response: str,
+    **meta,
+) -> None:
+    """
+    Record one full LLM request/response for later inspection (History UI).
+
+    A no-op when llm_log is None, so existing callers that don't opt in are
+    unaffected. Records are plain JSON-serializable dicts.
+
+    Args:
+        llm_log: Collector list (usually PipelineContext.llm_calls); None to skip
+        step: Semantic label, e.g. "narration" / "title" / "image_prompt"
+        prompt: The full prompt string sent to the LLM
+        response: The full raw response string received from the LLM
+        **meta: Extra context (e.g. batch_index, attempt, n_scenes)
+    """
+    if llm_log is None:
+        return
+    llm_log.append({
+        "step": step,
+        "prompt": prompt,
+        "response": response,
+        "meta": meta,
+    })
+
+
 async def generate_title(
     llm_service,
     content: str,
     strategy: Literal["auto", "direct", "llm"] = "auto",
     max_length: int = 15,
     language: Optional[str] = None,
+    llm_log: Optional[List[dict]] = None,
 ) -> str:
     """
     Generate title from content
@@ -72,7 +103,8 @@ async def generate_title(
     # Pass max_length to prompt so LLM knows the character limit
     prompt = build_title_generation_prompt(content, max_length=max_length, language=_resolve_language(language))
     response = await llm_service(prompt, temperature=0.7, max_tokens=2000)
-    
+    _record_llm_call(llm_log, "title", prompt, response, max_length=max_length)
+
     # Clean up response
     title = response.strip()
     
@@ -112,6 +144,7 @@ async def generate_narrations_from_topic(
     max_words: int = 20,
     language: Optional[str] = None,
     topic_context: Optional[str] = None,
+    llm_log: Optional[List[dict]] = None,
 ) -> List[str]:
     """
     Generate narrations from topic using LLM
@@ -145,17 +178,18 @@ async def generate_narrations_from_topic(
         temperature=0.8,
         max_tokens=8192
     )
-    
+    _record_llm_call(llm_log, "narration", prompt, response, n_scenes=n_scenes)
+
     logger.debug(f"LLM response: {response[:200]}...")
-    
+
     # Parse JSON
     result = _parse_json(response)
-    
+
     if "narrations" not in result:
         raise ValueError("Invalid response format: missing 'narrations' key")
-    
+
     narrations = result["narrations"]
-    
+
     # Validate count
     if len(narrations) > n_scenes:
         logger.warning(f"Got {len(narrations)} narrations, taking first {n_scenes}")
@@ -164,7 +198,7 @@ async def generate_narrations_from_topic(
         raise ValueError("LLM generated 0 narrations")
     elif len(narrations) < n_scenes:
         logger.warning(f"Expected {n_scenes} narrations, got only {len(narrations)}. Proceeding with {len(narrations)} scenes.")
-    
+
     logger.info(f"Generated {len(narrations)} narrations successfully")
     return narrations
 
@@ -296,7 +330,8 @@ async def generate_image_prompts(
     max_words: int = 60,
     batch_size: int = 10,
     max_retries: int = 3,
-    progress_callback: Optional[callable] = None
+    progress_callback: Optional[callable] = None,
+    llm_log: Optional[List[dict]] = None,
 ) -> List[str]:
     """
     Generate image prompts from narrations (with batching and retry)
@@ -342,12 +377,16 @@ async def generate_image_prompts(
                     temperature=0.7,
                     max_tokens=8192
                 )
-                
+                _record_llm_call(
+                    llm_log, "image_prompt", prompt, response,
+                    batch_index=batch_idx, total_batches=len(batches), attempt=attempt,
+                )
+
                 logger.debug(f"Batch {batch_idx} attempt {attempt}: LLM response length: {len(response)} chars")
-                
+
                 # Parse JSON
                 result = _parse_json(response)
-                
+
                 if "image_prompts" not in result:
                     raise KeyError("Invalid response format: missing 'image_prompts'")
                 

@@ -121,6 +121,7 @@ class StandardPipeline(LinearVideoPipeline):
                 max_words=max_words,
                 language=ctx.params.get("language"),
                 topic_context=ctx.params.get("topic_context"),
+                llm_log=ctx.llm_calls,
             )
             self._report_progress(
                 ctx.progress_callback,
@@ -154,10 +155,10 @@ class StandardPipeline(LinearVideoPipeline):
             self._report_progress(ctx.progress_callback, "generating_title", 0.01)
             _language = ctx.params.get("language")
             if mode == "generate":
-                ctx.title = await generate_title(self.llm, text, strategy="auto", language=_language)
+                ctx.title = await generate_title(self.llm, text, strategy="auto", language=_language, llm_log=ctx.llm_calls)
                 logger.info(f"   Title: '{ctx.title}' (auto-generated)")
             else:  # fixed
-                ctx.title = await generate_title(self.llm, text, strategy="llm", language=_language)
+                ctx.title = await generate_title(self.llm, text, strategy="llm", language=_language, llm_log=ctx.llm_calls)
                 logger.info(f"   Title: '{ctx.title}' (LLM-generated)")
 
     async def plan_visuals(self, ctx: PipelineContext):
@@ -211,7 +212,8 @@ class StandardPipeline(LinearVideoPipeline):
                     narrations=ctx.narrations,
                     min_words=min_words,
                     max_words=max_words,
-                    progress_callback=image_prompt_progress
+                    progress_callback=image_prompt_progress,
+                    llm_log=ctx.llm_calls,
                 )
                 
                 # Apply prompt prefix
@@ -517,7 +519,10 @@ class StandardPipeline(LinearVideoPipeline):
                     "llm_base_url": self.core.config.get("llm", {}).get("base_url", "unknown"),
                     "comfyui_url": self.core.config.get("comfyui", {}).get("comfyui_url", "unknown"),
                     "runninghub_enabled": bool(self.core.config.get("comfyui", {}).get("runninghub_api_key")),
-                }
+                },
+
+                # Full LLM request/response log for this task (viewable in History UI)
+                "llm_calls": ctx.llm_calls,
             }
             
             # Save metadata

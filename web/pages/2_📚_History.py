@@ -448,9 +448,33 @@ def render_task_detail_modal(task_id: str, pixelle_video):
                 )
         else:
             st.warning("Video file not found")
-    
+
+    # ====================================================================
+    # LLM call log: full prompt + raw response for each generation step
+    # ====================================================================
+    llm_calls = metadata.get("llm_calls") or []
+    if llm_calls:
+        st.divider()
+        st.markdown(f"**🤖 {tr('history.detail.llm_calls')}**")
+
+        _step_labels = {
+            "narration": tr("history.detail.llm_step_narration"),
+            "title": tr("history.detail.llm_step_title"),
+            "image_prompt": tr("history.detail.llm_step_image_prompt"),
+        }
+        for i, call in enumerate(llm_calls, 1):
+            step = call.get("step", "")
+            label = _step_labels.get(step, step or "LLM")
+            meta = call.get("meta") or {}
+            suffix = f" · batch {meta['batch_index']}" if meta.get("batch_index") else ""
+            with st.expander(f"{i}. {label}{suffix}", expanded=False):
+                st.markdown(f"**{tr('history.detail.llm_prompt')}**")
+                st.code(call.get("prompt", ""), language="markdown")
+                st.markdown(f"**{tr('history.detail.llm_response')}**")
+                st.code(call.get("response", ""), language="json")
+
     st.divider()
-    
+
     # Close button at the bottom
     if st.button("❌ " + tr("history.detail.close"), key=f"close_detail_bottom_{task_id}"):
         st.session_state[f"detail_{task_id}"] = False

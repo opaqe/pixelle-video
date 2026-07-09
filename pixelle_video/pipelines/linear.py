@@ -62,6 +62,12 @@ class PipelineContext:
     final_video_path: Optional[str] = None
     result: Optional[VideoGenerationResult] = None
 
+    # === Observability ===
+    # Full LLM request/response records captured during this run (narration,
+    # title, image-prompt generation, ...). Persisted into task metadata so the
+    # History UI can show exactly how each LLM call was made and what came back.
+    llm_calls: List[Dict[str, Any]] = field(default_factory=list)
+
 
 class LinearVideoPipeline(BasePipeline):
     """
