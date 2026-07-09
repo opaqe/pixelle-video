@@ -120,6 +120,7 @@ class StandardPipeline(LinearVideoPipeline):
                 min_words=min_words,
                 max_words=max_words,
                 language=ctx.params.get("language"),
+                topic_context=ctx.params.get("topic_context"),
             )
             self._report_progress(
                 ctx.progress_callback,

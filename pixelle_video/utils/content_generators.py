@@ -111,30 +111,33 @@ async def generate_narrations_from_topic(
     min_words: int = 5,
     max_words: int = 20,
     language: Optional[str] = None,
+    topic_context: Optional[str] = None,
 ) -> List[str]:
     """
     Generate narrations from topic using LLM
-    
+
     Args:
         llm_service: LLM service instance
         topic: Topic/theme to generate narrations from
         n_scenes: Number of narrations to generate
         min_words: Minimum narration length
         max_words: Maximum narration length
-    
+        topic_context: Optional shared context/direction guiding the angle and tone
+
     Returns:
         List of narration texts
     """
     from pixelle_video.prompts import build_topic_narration_prompt
-    
+
     logger.info(f"Generating {n_scenes} narrations from topic: {topic}")
-    
+
     prompt = build_topic_narration_prompt(
         topic=topic,
         n_storyboard=n_scenes,
         min_words=min_words,
         max_words=max_words,
         language=_resolve_language(language),
+        topic_context=topic_context,
     )
     
     response = await llm_service(

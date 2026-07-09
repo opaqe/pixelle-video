@@ -165,7 +165,15 @@ def render_content_input():
                 topics = []
             
             st.markdown("---")
-            
+
+            # Shared context/direction (optional) — applied to every topic in the batch
+            topic_context_input = st.text_area(
+                tr("batch.topic_context_label"),
+                height=100,
+                placeholder=tr("batch.topic_context_placeholder"),
+                help=tr("batch.topic_context_help")
+            )
+
             # Title prefix (optional)
             title_prefix = st.text_input(
                 tr("batch.title_prefix_label"),
@@ -191,6 +199,7 @@ def render_content_input():
                 "topics": topics,
                 "mode": "generate",  # Fixed to AI generate content
                 "title_prefix": title_prefix,
+                "topic_context": topic_context_input.strip(),
                 "n_scenes": n_scenes,
             }
 

@@ -27,7 +27,7 @@ The user will input a topic or theme. You need to create {n_storyboard} video st
 
 # Input Topic
 {topic}
-
+{topic_context_block}
 # Output Requirements
 
 ## Narration Specifications
@@ -137,6 +137,7 @@ def build_topic_narration_prompt(
     min_words: int,
     max_words: int,
     language: str | None = None,
+    topic_context: str | None = None,
 ) -> str:
     """
     Build topic narration prompt
@@ -147,16 +148,32 @@ def build_topic_narration_prompt(
         min_words: Minimum word count
         max_words: Maximum word count
         language: Output language code (e.g. "ko_KR"); forces narration language
+        topic_context: Optional shared context/direction that guides the angle,
+            tone, and perspective for the topic. When empty/None, the resulting
+            prompt is identical to the no-context version (no section rendered).
 
     Returns:
         Formatted prompt
     """
     from pixelle_video.prompts._language import language_directive
 
+    context = (topic_context or "").strip()
+    if context:
+        topic_context_block = (
+            "\n# Additional Context / Direction\n"
+            f"{context}\n\n"
+            "Use the above context to guide the specific angle, tone, and direction "
+            "of the narrations. The Input Topic above is the headline; this context "
+            "tells you which specific perspective to take.\n"
+        )
+    else:
+        topic_context_block = ""
+
     return language_directive(language) + TOPIC_NARRATION_PROMPT.format(
         topic=topic,
         n_storyboard=n_storyboard,
         min_words=min_words,
-        max_words=max_words
+        max_words=max_words,
+        topic_context_block=topic_context_block,
     )
 

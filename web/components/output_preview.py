@@ -325,6 +325,7 @@ def render_batch_output(pixelle_video, video_params):
             shared_config = {
                 "language": get_language(),
                 "title_prefix": video_params.get("title_prefix"),
+                "topic_context": video_params.get("topic_context") or None,
                 "n_scenes": video_params.get("n_scenes") or 5,
                 "media_workflow": video_params.get("media_workflow"),
                 "api_video_params": video_params.get("api_video_params"),
